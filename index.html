@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vocabulary Master — B1–B2 English Vocabulary Learning App</title>
+<meta name="description" content="Interactive English vocabulary learning app for Vietnamese learners (B1–B2) with flashcards, quizzes, listening and spaced review." />
+<style>
+/* ============================================================
+   THEME
+   ============================================================ */
+:root{
+  --bg:#eef4fb;
+  --bg-2:#e2edf8;
+  --card:#ffffff;
+  --primary:#4a90c2;
+  --primary-dark:#37739f;
+  --primary-light:#dceafa;
+  --primary-soft:#f2f8fd;
+  --accent:#7fb8e0;
+  --text:#1f3550;
+  --text-soft:#4a6580;
+  --muted:#7b91a8;
+  --border:#d8e6f3;
+  --ok:#349a6c;
+  --ok-bg:#e3f6ec;
+  --bad:#d95f5f;
+  --bad-bg:#fdeaea;
+  --warn:#c98a26;
+  --warn-bg:#fdf3e0;
+  --radius:18px;
+  --radius-sm:12px;
+  --shadow:0 6px 22px rgba(74,144,194,.12);
+  --shadow-lg:0 14px 40px rgba(74,144,194,.18);
+  --font: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font);
+  background:linear-gradient(180deg,var(--bg) 0%, var(--bg-2) 100%);
+  background-attachment:fixed;
+  color:var(--text);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+button{font-family:inherit;}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:6px;}
+
+/* ============================================================
+   HEADER / NAV
+   ============================================================ */
+header.app-header{
+  background:linear-gradient(135deg,#ffffff 0%, #f4f9fe 100%);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 2px 14px rgba(74,144,194,.08);
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(6px);
+}
+.header-inner{
+  max-width:1180px;margin:0 auto;padding:14px 16px 0;
+}
+.brand-row{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.brand-logo{
+  width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:22px;font-weight:700;flex-shrink:0;
+  box-shadow:0 6px 16px rgba(74,144,194,.32);
+}
+.brand-text h1{
+  margin:0;font-size:1.28rem;letter-spacing:-.02em;font-weight:700;color:var(--text);
+}
+.brand-text p{
+  margin:0;font-size:.78rem;color:var(--muted);font-weight:500;letter-spacing:.01em;
+}
+nav.main-nav{
+  display:flex;gap:6px;margin-top:12px;overflow-x:auto;
+  padding-bottom:10px;scrollbar-width:thin;
+}
+nav.main-nav::-webkit-scrollbar{height:5px;}
+nav.main-nav::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px;}
+.nav-btn{
+  flex:0 0 auto;
+  border:1px solid transparent;background:transparent;color:var(--text-soft);
+  padding:9px 16px;border-radius:999px;font-size:.86rem;font-weight:600;
+  cursor:pointer;transition:all .2s ease;white-space:nowrap;
+}
+.nav-btn:hover{background:var(--primary-light);color:var(--primary-dark);}
+.nav-btn.active{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;box-shadow:0 5px 14px rgba(74,144,194,.32);
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+main{max-width:1180px;margin:0 auto;padding:22px 16px 90px;}
+.page{display:none;animation:fadeUp .32s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+.section-title{
+  font-size:1.15rem;font-weight:700;margin:0 0 4px;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.section-sub{font-size:.84rem;color:var(--muted);margin:0 0 16px;}
+
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px;margin-bottom:18px;
+}
+.card.tight{padding:16px;}
+
+.grid{display:grid;gap:14px;}
+.grid-2{grid-template-columns:repeat(2,minmax(0,1fr));}
+.grid-3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.grid-4{grid-template-columns:repeat(4,minmax(0,1fr));}
+@media(max-width:860px){
+  .grid-3,.grid-4{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:520px){
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+}
+
+/* ============================================================
+   STAT CARDS
+   ============================================================ */
+.stat{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:16px 14px;box-shadow:0 3px 12px rgba(74,144,194,.07);
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.stat .stat-value{
+  font-size:1.6rem;font-weight:800;color:var(--primary-dark);line-height:1.15;
+  letter-spacing:-.02em;
+}
+.stat .stat-label{
+  font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;
+  font-weight:700;margin-top:4px;
+}
+.stat .stat-icon{font-size:1.05rem;margin-bottom:2px;}
+
+/* ============================================================
+   PROGRESS BARS
+   ============================================================ */
+.bar-wrap{margin-bottom:14px;}
+.bar-head{display:flex;justify-content:space-between;font-size:.82rem;font-weight:600;margin-bottom:6px;color:var(--text-soft);}
+.bar-track{
+  height:11px;background:var(--primary-light);border-radius:999px;overflow:hidden;
+}
+.bar-fill{
+  height:100%;border-radius:999px;
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  width:0%;transition:width .7s cubic-bezier(.22,1,.36,1);
+}
+.bar-fill.green{background:linear-gradient(90deg,#3aa876,#69c99a);}
+.bar-fill.orange{background:linear-gradient(90deg,#d99a3d,#efc06a);}
+.bar-fill.purple{background:linear-gradient(90deg,#7a7fd4,#a7abee);}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn{
+  border:1px solid var(--border);background:#fff;color:var(--text);
+  padding:10px 18px;border-radius:12px;font-size:.88rem;font-weight:600;
+  cursor:pointer;transition:all .18s ease;display:inline-flex;align-items:center;
+  justify-content:center;gap:8px;
+}
+.btn:hover{background:var(--primary-light);border-color:var(--accent);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(74,144,194,.28);
+}
+.btn-primary:hover{background:linear-gradient(135deg,var(--primary-dark),var(--primary));color:#fff;}
+.btn-ok{background:var(--ok-bg);color:var(--ok);border-color:#bfe6d4;}
+.btn-ok:hover{background:#d4f0e2;}
+.btn-bad{background:var(--bad-bg);color:var(--bad);border-color:#f6cccc;}
+.btn-bad:hover{background:#fbdcdc;}
+.btn-warn{background:var(--warn-bg);color:var(--warn);border-color:#f2dcb3;}
+.btn-warn:hover{background:#fbeacd;}
+.btn-sm{padding:7px 13px;font-size:.8rem;border-radius:10px;}
+.btn-block{width:100%;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* ============================================================
+   FLASHCARD
+   ============================================================ */
+.fc-scene{
+  perspective:1400px;width:100%;max-width:640px;margin:0 auto 18px;
+  min-height:400px;position:relative;
+}
+.fc-card{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform-style:preserve-3d;transition:transform .62s cubic-bezier(.4,.2,.2,1);
+  cursor:pointer;
+}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  background:var(--card);border:1px solid var(--border);border-radius:22px;
+  box-shadow:var(--shadow-lg);padding:26px 22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;overflow-y:auto;
+}
+.fc-face.fc-back{transform:rotateY(180deg);align-items:stretch;justify-content:flex-start;text-align:left;}
+.fc-tag{
+  display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--primary-dark);background:var(--primary-light);
+  padding:4px 12px;border-radius:999px;margin-bottom:14px;
+}
+.fc-word{
+  font-size:2.1rem;font-weight:800;letter-spacing:-.03em;color:var(--text);
+  word-break:break-word;line-height:1.15;
+}
+.fc-ipa{font-size:1.05rem;color:var(--muted);margin-top:8px;font-family:"Segoe UI",Arial,sans-serif;}
+.fc-hint{font-size:.76rem;color:var(--muted);margin-top:auto;padding-top:16px;font-style:italic;}
+.fc-back .fc-back-word{
+  font-size:1.35rem;font-weight:800;color:var(--primary-dark);margin-bottom:2px;
+}
+.fc-back .fc-back-pos{font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:14px;}
+.fc-block{margin-bottom:14px;}
+.fc-block-label{
+  font-size:.7rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:4px;
+}
+.fc-def{font-size:.98rem;color:var(--text);}
+.fc-vi{font-size:1rem;color:var(--primary-dark);font-weight:600;}
+.fc-example{
+  font-size:.92rem;color:var(--text-soft);font-style:italic;
+  background:var(--primary-soft);border-left:3px solid var(--accent);
+  padding:10px 12px;border-radius:0 10px 10px 0;
+}
+.fc-translation{font-size:.86rem;color:var(--muted);margin-top:6px;font-style:normal;}
+
+.speak-btn{
+  border:1px solid var(--border);background:var(--primary-soft);color:var(--primary-dark);
+  width:44px;height:44px;border-radius:50%;font-size:1.15rem;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:all .18s ease;flex-shrink:0;
+}
+.speak-btn:hover{background:var(--primary-light);transform:scale(1.06);}
+.speak-btn.lg{width:56px;height:56px;font-size:1.5rem;}
+
+.fc-controls{
+  display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:640px;margin:0 auto;
+}
+.fc-counter{
+  text-align:center;font-size:.82rem;color:var(--muted);font-weight:600;margin-bottom:12px;
+}
+.fc-status-row{
+  display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;
+}
+
+/* ============================================================
+   QUIZ / PRACTICE
+   ============================================================ */
+.quiz-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  margin-bottom:14px;flex-wrap:wrap;
+}
+.quiz-progress-text{font-size:.82rem;font-weight:700;color:var(--muted);}
+.quiz-question{
+  font-size:1.12rem;font-weight:700;line-height:1.5;margin-bottom:18px;color:var(--text);
+}
+.quiz-question .hl{
+  color:var(--primary-dark);background:var(--primary-light);
+  padding:1px 8px;border-radius:8px;
+}
+.options{display:grid;gap:10px;}
+.option{
+  width:100%;text-align:left;background:#fff;border:1.5px solid var(--border);
+  border-radius:14px;padding:14px 16px;font-size:.92rem;cursor:pointer;
+  transition:all .16s ease;color:var(--text);font-weight:500;display:flex;gap:12px;align-items:flex-start;
+}
+.option:hover:not(:disabled){border-color:var(--accent);background:var(--primary-soft);transform:translateX(3px);}
+.option .opt-key{
+  flex-shrink:0;width:26px;height:26px;border-radius:8px;background:var(--primary-light);
+  color:var(--primary-dark);font-weight:800;font-size:.78rem;
+  display:flex;align-items:center;justify-content:center;
+}
+.option.correct{background:var(--ok-bg);border-color:#8ed3b0;color:#1e6b48;}
+.option.correct .opt-key{background:#8ed3b0;color:#fff;}
+.option.wrong{background:var(--bad-bg);border-color:#f0a8a8;color:#9c3535;}
+.option.wrong .opt-key{background:#f0a8a8;color:#fff;}
+.option:disabled{cursor:default;}
+
+.input-row{display:flex;gap:10px;flex-wrap:wrap;}
+.text-input{
+  flex:1;min-width:200px;padding:13px 16px;border:1.5px solid var(--border);
+  border-radius:14px;font-size:1rem;font-family:inherit;color:var(--text);
+  background:#fff;transition:border-color .18s ease;
+}
+.text-input:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 4px rgba(74,144,194,.12);}
+
+.feedback{
+  margin-top:16px;padding:14px 16px;border-radius:14px;font-size:.9rem;
+  animation:fadeUp .28s ease;
+}
+.feedback.ok{background:var(--ok-bg);border:1px solid #bfe6d4;color:#1e6b48;}
+.feedback.bad{background:var(--bad-bg);border:1px solid #f6cccc;color:#9c3535;}
+.feedback strong{display:block;margin-bottom:4px;font-size:.95rem;}
+
+.hint-line{font-size:.86rem;color:var(--muted);margin-bottom:14px;}
+.hint-line b{color:var(--text-soft);}
+
+/* ============================================================
+   RESULT PAGE
+   ============================================================ */
+.result-hero{
+  text-align:center;padding:26px 18px;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--primary-light),#f3f9ff);
+  border:1px solid var(--border);margin-bottom:18px;
+}
+.result-hero .big-score{
+  font-size:3rem;font-weight:900;color:var(--primary-dark);line-height:1;letter-spacing:-.03em;
+}
+.result-hero .big-label{font-size:.9rem;color:var(--text-soft);font-weight:600;margin-top:6px;}
+.review-item{
+  border:1px solid var(--border);border-radius:14px;padding:13px 15px;margin-bottom:10px;
+  background:#fff;font-size:.88rem;
+}
+.review-item.ok{border-left:4px solid var(--ok);}
+.review-item.bad{border-left:4px solid var(--bad);}
+.review-item .ri-word{font-weight:800;color:var(--text);font-size:.98rem;}
+.review-item .ri-line{color:var(--text-soft);margin-top:4px;}
+.review-item .ri-line b{color:var(--text);}
+.review-item .ri-ex{color:var(--muted);font-style:italic;margin-top:6px;font-size:.84rem;}
+
+/* ============================================================
+   LIBRARY / LIST
+   ============================================================ */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.toolbar .text-input{min-width:180px;}
+.select{
+  padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;
+  font-size:.88rem;font-family:inherit;background:#fff;color:var(--text);cursor:pointer;
+  font-weight:600;
+}
+.select:focus{border-color:var(--primary);outline:none;}
+
+.chip-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.chip{
+  border:1px solid var(--border);background:#fff;color:var(--text-soft);
+  padding:6px 13px;border-radius:999px;font-size:.78rem;font-weight:700;cursor:pointer;
+  transition:all .16s ease;
+}
+.chip:hover{background:var(--primary-soft);border-color:var(--accent);}
+.chip.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+.vocab-list{display:grid;gap:10px;}
+.vocab-item{
+  display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--border);
+  border-radius:14px;padding:12px 14px;cursor:pointer;transition:all .16s ease;
+}
+.vocab-item:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-1px);}
+.vocab-item .vi-main{flex:1;min-width:0;}
+.vocab-item .vi-word{font-weight:800;font-size:.98rem;color:var(--text);}
+.vocab-item .vi-ipa{font-size:.78rem;color:var(--muted);margin-left:6px;font-weight:500;}
+.vocab-item .vi-def{
+  font-size:.82rem;color:var(--text-soft);margin-top:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.vocab-item .vi-pos{
+  font-size:.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--primary-dark);background:var(--primary-light);padding:3px 9px;border-radius:999px;
+  flex-shrink:0;
+}
+
+.badge{
+  display:inline-block;font-size:.68rem;font-weight:800;padding:3px 9px;border-radius:999px;
+  letter-spacing:.04em;text-transform:uppercase;
+}
+.badge.new{background:#e8eef5;color:#6b8199;}
+.badge.learning{background:#fdf0d8;color:#a9762a;}
+.badge.familiar{background:#e0eefb;color:#37739f;}
+.badge.mastered{background:#dcf5e8;color:#237a52;}
+
+.empty-state{
+  text-align:center;padding:38px 18px;color:var(--muted);font-size:.9rem;
+}
+
+/* ============================================================
+   GOAL / SETTINGS
+   ============================================================ */
+.goal-ring{
+  display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;
+}
+.goal-num{font-size:2rem;font-weight:900;color:var(--primary-dark);letter-spacing:-.03em;}
+
+.settings-row{
+  display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;
+}
+.settings-row:last-child{border-bottom:none;}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(31,53,80,.45);backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;z-index:200;padding:18px;
+}
+.modal-overlay.show{display:flex;animation:fadeUp .22s ease;}
+.modal-box{
+  background:#fff;border-radius:20px;padding:26px 22px;max-width:420px;width:100%;
+  box-shadow:var(--shadow-lg);text-align:center;
+}
+.modal-box h3{margin:0 0 8px;font-size:1.1rem;color:var(--text);}
+.modal-box p{margin:0 0 20px;font-size:.9rem;color:var(--text-soft);}
+.modal-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#fff;padding:12px 22px;border-radius:999px;
+  font-size:.86rem;font-weight:600;opacity:0;pointer-events:none;
+  transition:all .3s ease;z-index:300;max-width:90vw;text-align:center;
+  box-shadow:0 10px 30px rgba(31,53,80,.3);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+.quick-btn{
+  border:1px solid var(--border);background:linear-gradient(160deg,#ffffff,#f6fbff);
+  border-radius:16px;padding:18px 14px;cursor:pointer;text-align:left;
+  transition:all .2s ease;display:flex;flex-direction:column;gap:6px;
+}
+.quick-btn:hover{transform:translateY(-3px);box-shadow:var(--shadow);border-color:var(--accent);}
+.quick-btn .qb-icon{font-size:1.5rem;}
+.quick-btn .qb-title{font-weight:700;font-size:.9rem;color:var(--text);}
+.quick-btn .qb-desc{font-size:.75rem;color:var(--muted);}
+
+.divider{height:1px;background:var(--border);margin:18px 0;}
+
+.mode-title{font-size:1rem;font-weight:800;margin:0 0 10px;color:var(--text);}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.pill{
+  border:1.5px solid var(--border);background:#fff;color:var(--text-soft);
+  padding:8px 16px;border-radius:999px;font-size:.82rem;font-weight:700;cursor:pointer;
+  transition:all .16s ease;
+}
+.pill:hover{border-color:var(--accent);background:var(--primary-soft);}
+.pill.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+
+@media(max-width:520px){
+  .fc-scene{min-height:430px;}
+  .fc-word{font-size:1.7rem;}
+  .brand-text h1{font-size:1.1rem;}
+  main{padding:16px 12px 80px;}
+  .card{padding:16px;}
+  .btn{padding:9px 14px;font-size:.83rem;}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand-row">
+      <div class="brand-logo" aria-hidden="true">VM</div>
+      <div class="brand-text">
+        <h1>Vocabulary Master</h1>
+        <p>B1–B2 English Vocabulary Learning App</p>
+      </div>
+    </div>
+    <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+      <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+      <button class="nav-btn" data-page="flashcards">Flashcards</button>
+      <button class="nav-btn" data-page="practice">Practice</button>
+      <button class="nav-btn" data-page="listening">Listening</button>
+      <button class="nav-btn" data-page="library">Library</button>
+      <button class="nav-btn" data-page="progress">Progress</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============================ DASHBOARD ============================ -->
+  <section id="page-dashboard" class="page active" aria-labelledby="dashTitle">
+    <h2 class="section-title" id="dashTitle">📊 Dashboard</h2>
+    <p class="section-sub">Your learning overview — updated automatically as you study.</p>
+
+    <div class="grid grid-4" id="dashStats"></div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="section-title" style="font-size:1rem;">📈 Mastery Progress</div>
+      <div id="dashBars"></div>
+    </div>
+
+    <div class="grid grid-2" style="margin-top:18px;">
+      <div class="card">
+        <div class="section-title" style="font-size:1rem;">🎯 Today's Goal</div>
+        <p class="section-sub" style="margin-bottom:14px;">Set a daily target and keep your streak alive.</p>
+        <div class="goal-ring">
+          <div style="text-align:center;">
+            <div class="goal-num" id="goalNum">0 / 10</div>
+            <div style="font-size:.78rem;color:var(--muted);font-weight:600;">words reviewed today</div>
+          </div>
+        </div>
+        <div class="bar-wrap" style="margin-top:16px;">
+          <div class="bar-track"><div class="bar-fill green" id="goalBar"></div></div>
+        </div>
+        <div class="pill-row" id="goalPills" style="margin-top:14px;">
+          <button class="pill" data-goal="5">5 words</button>
+          <button class="pill" data-goal="10">10 words</button>
+          <button class="pill" data-goal="15">15 words</button>
+          <button class="pill" data-goal="20">20 words</button>
+          <button class="pill" data-goal="30">30 words</button>
+        </div>
+        <div id="goalMsg"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title" style="font-size:1rem;">▶️ Continue Learning</div>
+        <p class="section-sub" style="margin-bottom:14px;">Pick up where you left off.</p>
+        <div id="continueBox"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="section-title" style="font-size:1rem;">⚡ Quick Practice</div>
+      <p class="section-sub" style="margin-bottom:14px;">Jump straight into an exercise.</p>
+      <div class="quick-grid">
+        <button class="quick-btn" data-quick="flashcards">
+          <span class="qb-icon">🃏</span>
+          <span class="qb-title">Flashcards</span>
+          <span class="qb-desc">Flip, listen and rate words</span>
+        </button>
+        <button class="quick-btn" data-quick="quiz">
+          <span class="qb-icon">❓</span>
+          <span class="qb-title">Vocabulary Quiz</span>
+          <span class="qb-desc">Multiple-choice meaning test</span>
+        </button>
+        <button class="quick-btn" data-quick="listening">
+          <span class="qb-icon">🎧</span>
+          <span class="qb-title">Listening Practice</span>
+          <span class="qb-desc">Hear it, then choose it</span>
+        </button>
+        <button class="quick-btn" data-quick="spelling">
+          <span class="qb-icon">⌨️</span>
+          <span class="qb-title">Spelling Practice</span>
+          <span class="qb-desc">Type the word you hear</span>
+        </button>
+        <button class="quick-btn" data-quick="context">
+          <span class="qb-icon">📝</span>
+          <span class="qb-title">Context Practice</span>
+          <span class="qb-desc">Fill the gap in a sentence</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FLASHCARDS ============================ -->
+  <section id="page-flashcards" class="page" aria-labelledby="fcTitle">
+    <h2 class="section-title" id="fcTitle">🃏 Flashcards</h2>
+    <p class="section-sub">Tap the card to flip it. Rate each word to build your spaced-review schedule.</p>
+
+    <div class="card tight">
+      <div class="mode-title">Session size</div>
+      <div class="pill-row" id="deckPills">
+        <button class="pill" data-deck="5">5 words</button>
+        <button class="pill active" data-deck="10">10 words</button>
+        <button class="pill" data-deck="20">20 words</button>
+        <button class="pill" data-deck="all">All words</button>
+        <button class="pill" id="newDeckBtn" style="margin-left:auto;background:var(--primary);color:#fff;border-color:var(--primary);">🔄 New session</button>
+      </div>
+    </div>
+
+    <div class="fc-counter" id="fcCounter">—</div>
+
+    <div class="fc-status-row" id="fcStatusRow"></div>
+
+    <div class="fc-scene">
+      <div class="fc-card" id="fcCard" tabindex="0" role="button" aria-label="Flashcard — press Enter to flip">
+        <div class="fc-face fc-front">
+          <div class="fc-tag" id="fcPos">—</div>
+          <div class="fc-word" id="fcWord">—</div>
+          <div class="fc-ipa" id="fcIpa">—</div>
+          <div style="margin-top:18px;">
+            <button class="speak-btn lg" id="fcSpeakBtn" aria-label="Listen to pronunciation">🔊</button>
+          </div>
+          <div class="fc-hint">Tap card to flip</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-back-word" id="fcBackWord">—</div>
+          <div class="fc-back-pos" id="fcBackPos">—</div>
+          <div class="fc-block">
+            <div class="fc-block-label">Definition</div>
+            <div class="fc-def" id="fcDef">—</div>
+          </div>
+          <div class="fc-block">
+            <div class="fc-block-label">Vietnamese</div>
+            <div class="fc-vi" id="fcVi">—</div>
+          </div>
+          <div class="fc-block">
+            <div class="fc-block-label">Example</div>
+            <div class="fc-example" id="fcExample">—</div>
+            <div class="fc-translation" id="fcTranslation">—</div>
+          </div>
+          <div style="margin-top:auto;padding-top:12px;">
+            <button class="speak-btn" id="fcSpeakBtn2" aria-label="Listen to pronunciation">🔊</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fc-controls">
+      <button class="btn" id="fcPrev">← Previous</button>
+      <button class="btn btn-primary" id="fcFlip">🔄 Flip</button>
+      <button class="btn" id="fcNext">Next →</button>
+    </div>
+    <div class="fc-controls" style="margin-top:10px;">
+      <button class="btn" id="fcListen">🔊 Listen again</button>
+      <button class="btn btn-bad" id="fcDontKnow">😕 I don't know</button>
+      <button class="btn btn-ok" id="fcKnow">✅ Know it</button>
+      <button class="btn btn-warn" id="fcDifficult">⭐ Difficult</button>
+      <button class="btn" id="fcFav">🤍 Favourite</button>
+    </div>
+  </section>
+
+  <!-- ============================ PRACTICE ============================ -->
+  <section id="page-practice" class="page" aria-labelledby="prTitle">
+    <h2 class="section-title" id="prTitle">🎯 Practice Center</h2>
+    <p class="section-sub">Six exercise types to lock the vocabulary into long-term memory.</p>
+
+    <div id="practiceMenu">
+      <div class="card">
+        <div class="mode-title">Choose your exercise</div>
+        <div class="quick-grid">
+          <button class="quick-btn" data-practice="mc-vi">
+            <span class="qb-icon">🅰️</span>
+            <span class="qb-title">Multiple Choice</span>
+            <span class="qb-desc">English word → Vietnamese meaning</span>
+          </button>
+          <button class="quick-btn" data-practice="def-word">
+            <span class="qb-icon">📖</span>
+            <span class="qb-title">Definition → Word</span>
+            <span class="qb-desc">Read the definition, pick the word</span>
+          </button>
+          <button class="quick-btn" data-practice="vi-en">
+            <span class="qb-icon">🇻🇳</span>
+            <span class="qb-title">Vietnamese → English</span>
+            <span class="qb-desc">Translate into English</span>
+          </button>
+          <button class="quick-btn" data-practice="spelling">
+            <span class="qb-icon">⌨️</span>
+            <span class="qb-title">Spelling Practice</span>
+            <span class="qb-desc">Type the word from IPA + definition</span>
+          </button>
+          <button class="quick-btn" data-practice="fill">
+            <span class="qb-icon">✏️</span>
+            <span class="qb-title">Fill in the Blank</span>
+            <span class="qb-desc">Type the missing word</span>
+          </button>
+          <button class="quick-btn" data-practice="context">
+            <span class="qb-icon">📝</span>
+            <span class="qb-title">Context Practice</span>
+            <span class="qb-desc">Choose the word that fits the sentence</span>
+          </button>
+        </div>
+        <div class="divider"></div>
+        <div class="mode-title">Number of questions</div>
+        <div class="pill-row" id="quizLengthPills">
+          <button class="pill" data-len="5">5</button>
+          <button class="pill active" data-len="10">10</button>
+          <button class="pill" data-len="20">20</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="quizRun" style="display:none;">
+      <div class="card">
+        <div class="quiz-head">
+          <div class="quiz-progress-text" id="quizProgressText">Question 1 / 10</div>
+          <button class="btn btn-sm" id="quizQuit">✕ Quit</button>
+        </div>
+        <div class="bar-wrap">
+          <div class="bar-track"><div class="bar-fill" id="quizBar"></div></div>
+        </div>
+        <div class="quiz-question" id="quizQuestion">—</div>
+        <div id="quizBody"></div>
+        <div id="quizFeedback"></div>
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="btn btn-primary" id="quizNextBtn" style="display:none;">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="quizResult" style="display:none;"></div>
+  </section>
+
+  <!-- ============================ LISTENING ============================ -->
+  <section id="page-listening" class="page" aria-labelledby="lsTitle">
+    <h2 class="section-title" id="lsTitle">🎧 Listening Practice</h2>
+    <p class="section-sub">Listen to the British-English pronunciation, then choose the word you heard.</p>
+
+    <div class="card">
+      <div class="quiz-head">
+        <div class="quiz-progress-text" id="lsProgressText">Question 1 / 10</div>
+        <div class="quiz-progress-text" id="lsAccuracy">Listening accuracy: —</div>
+      </div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill purple" id="lsBar"></div></div>
+      </div>
+
+      <div style="text-align:center;padding:18px 0 8px;">
+        <p style="font-size:1rem;font-weight:700;color:var(--text-soft);margin:0 0 16px;">What word did you hear?</p>
+        <button class="speak-btn lg" id="lsPlay" aria-label="Play the word">🔊</button>
+        <div style="margin-top:12px;">
+          <button class="btn btn-sm" id="lsReplay">🔁 Replay</button>
+        </div>
+      </div>
+
+      <div class="options" id="lsOptions"></div>
+      <div id="lsFeedback"></div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" id="lsNext" style="display:none;">Next →</button>
+        <button class="btn" id="lsRestart">🔄 New round</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="font-size:1rem;">🗣️ Pronunciation Practice</div>
+      <p class="section-sub">Listen to the model, then try saying it yourself.</p>
+      <div id="speakBox"></div>
+    </div>
+  </section>
+
+  <!-- ============================ LIBRARY ============================ -->
+  <section id="page-library" class="page" aria-labelledby="libTitle">
+    <h2 class="section-title" id="libTitle">📚 Vocabulary Library</h2>
+    <p class="section-sub">Search by English word, Vietnamese meaning or part of speech. Filter by learning status.</p>
+
+    <div class="card tight">
+      <div class="toolbar">
+        <input type="search" id="searchInput" class="text-input" placeholder="🔍 Search a word, meaning or part of speech…" aria-label="Search vocabulary" />
+        <select class="select" id="posSelect" aria-label="Filter by part of speech">
+          <option value="all">All parts of speech</option>
+          <option value="noun">noun</option>
+          <option value="verb">verb</option>
+          <option value="adjective">adjective</option>
+          <option value="adverb">adverb</option>
+          <option value="expression">expression</option>
+          <option value="phrase">phrase</option>
+        </select>
+      </div>
+      <div class="chip-row" id="statusChips">
+        <button class="chip active" data-status="all">All</button>
+        <button class="chip" data-status="new">New</button>
+        <button class="chip" data-status="learning">Learning</button>
+        <button class="chip" data-status="familiar">Familiar</button>
+        <button class="chip" data-status="mastered">Mastered</button>
+        <button class="chip" data-status="difficult">Difficult</button>
+        <button class="chip" data-status="favourite">Favourite</button>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);font-weight:600;" id="libCount">—</div>
+    </div>
+
+    <div class="vocab-list" id="vocabList"></div>
+  </section>
+
+  <!-- ============================ PROGRESS ============================ -->
+  <section id="page-progress" class="page" aria-labelledby="pgTitle">
+    <h2 class="section-title" id="pgTitle">📈 Progress &amp; Settings</h2>
+    <p class="section-sub">Detailed statistics, accuracy breakdowns and data management.</p>
+
+    <div class="grid grid-4" id="progressStats"></div>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="section-title" style="font-size:1rem;">📊 Skill Breakdown</div>
+      <div id="skillBars"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="font-size:1rem;">🕘 Recent Sessions</div>
+      <div id="sessionHistory"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title" style="font-size:1rem;">⚙️ Settings</div>
+      <div class="settings-row">
+        <div>
+          <div style="font-weight:700;font-size:.9rem;">Daily study goal</div>
+          <div style="font-size:.78rem;color:var(--muted);">How many words you want to review each day.</div>
+        </div>
+        <select class="select" id="settingsGoal" aria-label="Daily study goal">
+          <option value="5">5 words</option>
+          <option value="10">10 words</option>
+          <option value="15">15 words</option>
+          <option value="20">20 words</option>
+          <option value="30">30 words</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div style="font-weight:700;font-size:.9rem;">British English voice</div>
+          <div style="font-size:.78rem;color:var(--muted);" id="voiceInfo">Checking…</div>
+        </div>
+        <button class="btn btn-sm" id="testVoiceBtn">🔊 Test voice</button>
+      </div>
+      <div class="settings-row">
+        <div>
+          <div style="font-weight:700;font-size:.9rem;color:var(--bad);">Reset all progress</div>
+          <div style="font-size:.78rem;color:var(--muted);">Deletes learning data only — vocabulary stays intact.</div>
+        </div>
+        <button class="btn btn-bad" id="resetBtn">🗑️ Reset All Progress</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============================ MODAL ============================ -->
+<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-box">
+    <h3 id="modalTitle">Are you sure?</h3>
+    <p id="modalText">Are you sure you want to reset all learning progress?</p>
+    <div class="modal-actions">
+      <button class="btn" id="modalCancel">Cancel</button>
+      <button class="btn btn-bad" id="modalConfirm">Reset</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const vocabulary = [
+  { word:"academic", ipa:"/ˌækəˈdemɪk/", pos:"adj.", definition:"related to studying and learning", vietnamese:"thuộc học thuật; liên quan đến việc học tập và nghiên cứu", example:"His academic work is excellent.", translation:"Kết quả học tập của anh ấy rất xuất sắc." },
+  { word:"component", ipa:"/kəmˈpoʊnənt/", pos:"n.", definition:"one of the many parts that are in a machine, system, or idea", vietnamese:"thành phần, bộ phận cấu thành", example:"Each component of the machine must be checked.", translation:"Mỗi bộ phận của cỗ máy đều phải được kiểm tra." },
+  { word:"effective", ipa:"/ɪˈfektɪv/", pos:"adj.", definition:"something that works well and produces the result that one wants", vietnamese:"hiệu quả; mang lại kết quả mong muốn", example:"This is an effective way to learn new words.", translation:"Đây là một cách hiệu quả để học từ mới." },
+  { word:"long-term", ipa:"/ˌlɔːŋˈtɜːrm/", pos:"adj.", definition:"continuing for a long period of time", vietnamese:"dài hạn; kéo dài trong thời gian dài", example:"They are planning a long-term investment.", translation:"Họ đang lên kế hoạch đầu tư dài hạn." },
+  { word:"make an effort", ipa:"/meɪk ən ˈefərt/", pos:"exp.", definition:"to try, to attempt", vietnamese:"nỗ lực, cố gắng", example:"You should make an effort to study every day.", translation:"Bạn nên cố gắng học mỗi ngày." },
+  { word:"structure", ipa:"/ˈstrʌktʃər/", pos:"n.", definition:"the way things are connected", vietnamese:"cấu trúc; cách các thứ được kết nối", example:"The structure of the essay is clear.", translation:"Cấu trúc của bài luận rất rõ ràng." },
+  { word:"technique", ipa:"/tekˈniːk/", pos:"n.", definition:"a method, a procedure by which something is performed", vietnamese:"kỹ thuật, phương pháp", example:"Students should develop effective study techniques.", translation:"Học sinh nên phát triển các kỹ thuật học tập hiệu quả." },
+  { word:"transfer", ipa:"/ˈtrænsfɜːr/", pos:"v.", definition:"to move from one place, vehicle, etc., to another", vietnamese:"chuyển, di chuyển từ nơi này sang nơi khác", example:"We had to transfer to another bus.", translation:"Chúng tôi phải chuyển sang một chiếc xe buýt khác." },
+  { word:"alternative", ipa:"/ɔːlˈtɜːrnətɪv/", pos:"adj./n.", definition:"different than what is usual or expected; another option", vietnamese:"thay thế, khác thường; lựa chọn khác", example:"We need an alternative plan in case it rains.", translation:"Chúng ta cần một kế hoạch thay thế phòng khi trời mưa." },
+  { word:"apply", ipa:"/əˈplaɪ/", pos:"v.", definition:"to use an idea or skill for a particular purpose", vietnamese:"áp dụng, sử dụng cho một mục đích", example:"You should apply this method to your studies.", translation:"Bạn nên áp dụng phương pháp này vào việc học." },
+  { word:"assess", ipa:"/əˈses/", pos:"v.", definition:"to consider something in order to make a judgment", vietnamese:"đánh giá, xem xét để đưa ra nhận định", example:"Teachers assess students' progress every term.", translation:"Giáo viên đánh giá tiến độ của học sinh mỗi học kỳ." },
+  { word:"interact", ipa:"/ˌɪntərˈækt/", pos:"v.", definition:"to communicate with someone through conversation, looks, or action", vietnamese:"tương tác, giao tiếp", example:"Children learn by interacting with each other.", translation:"Trẻ em học bằng cách tương tác với nhau." },
+  { word:"debate", ipa:"/dɪˈbeɪt/", pos:"n.", definition:"a discussion about opinions on a topic", vietnamese:"cuộc tranh luận", example:"The debate lasted for two hours.", translation:"Cuộc tranh luận kéo dài hai giờ." },
+  { word:"measure", ipa:"/ˈmeʒər/", pos:"v.", definition:"to find the size, weight, speed, etc., of something", vietnamese:"đo lường", example:"Please measure the length of the table.", translation:"Xin hãy đo chiều dài của cái bàn." },
+  { word:"memorize", ipa:"/ˈmeməraɪz/", pos:"v.", definition:"to remember something exactly, to learn something by heart", vietnamese:"ghi nhớ, học thuộc lòng", example:"It is hard to memorize all these words.", translation:"Thật khó để ghi nhớ tất cả những từ này." },
+  { word:"reform", ipa:"/rɪˈfɔːrm/", pos:"v.", definition:"to change or improve something, especially government", vietnamese:"cải cách, cải thiện", example:"The government wants to reform the education system.", translation:"Chính phủ muốn cải cách hệ thống giáo dục." },
+  { word:"accommodation", ipa:"/əˌkɑːməˈdeɪʃn/", pos:"n.", definition:"buildings or rooms where people stay, especially in a hotel", vietnamese:"chỗ ở", example:"The hotel provides comfortable accommodation.", translation:"Khách sạn cung cấp chỗ ở thoải mái." },
+  { word:"basic", ipa:"/ˈbeɪsɪk/", pos:"adj.", definition:"the simplest and most necessary part of something", vietnamese:"cơ bản; đơn giản và cần thiết nhất", example:"These are the basic rules of grammar.", translation:"Đây là những quy tắc ngữ pháp cơ bản." },
+  { word:"eager", ipa:"/ˈiːɡər/", pos:"adj.", definition:"very excited about something that is going to happen soon", vietnamese:"háo hức, mong đợi", example:"She is eager to start her new job.", translation:"Cô ấy háo hức bắt đầu công việc mới." },
+  { word:"exhausting", ipa:"/ɪɡˈzɔːstɪŋ/", pos:"adj.", definition:"very tiring", vietnamese:"mệt mỏi, kiệt sức", example:"The trip was long and exhausting.", translation:"Chuyến đi dài và mệt mỏi." },
+  { word:"fabulous", ipa:"/ˈfæbjələs/", pos:"adj.", definition:"great, wonderful", vietnamese:"tuyệt vời, xuất sắc", example:"We had a fabulous time at the party.", translation:"Chúng tôi đã có khoảng thời gian tuyệt vời ở bữa tiệc." },
+  { word:"possession", ipa:"/pəˈzeʃn/", pos:"n.", definition:"a piece of property, a belonging", vietnamese:"tài sản, vật sở hữu", example:"He lost all his possessions in the fire.", translation:"Anh ấy mất tất cả tài sản trong vụ cháy." },
+  { word:"range", ipa:"/reɪndʒ/", pos:"n.", definition:"a number of different things of the same kind", vietnamese:"phạm vi; một loạt các thứ cùng loại", example:"The store sells a wide range of products.", translation:"Cửa hàng bán nhiều loại sản phẩm." },
+  { word:"unique", ipa:"/juːˈniːk/", pos:"adj.", definition:"one of a kind", vietnamese:"độc đáo, duy nhất", example:"Her style is completely unique.", translation:"Phong cách của cô ấy hoàn toàn độc đáo." },
+  { word:"assume", ipa:"/əˈsuːm/", pos:"v.", definition:"to think something is true without proof", vietnamese:"giả định, cho là đúng mà không có bằng chứng", example:"I assume you have finished your homework.", translation:"Tôi cho rằng bạn đã làm xong bài tập về nhà." },
+  { word:"authorized", ipa:"/ˈɔːθəraɪzd/", pos:"adj.", definition:"having official permission for something", vietnamese:"được ủy quyền, được cho phép chính thức", example:"Only authorized staff can enter this room.", translation:"Chỉ nhân viên được ủy quyền mới có thể vào phòng này." },
+  { word:"departure", ipa:"/dɪˈpɑːrtʃər/", pos:"n.", definition:"a leaving", vietnamese:"sự khởi hành, sự rời đi", example:"The departure time is six in the morning.", translation:"Giờ khởi hành là sáu giờ sáng." },
+  { word:"expire", ipa:"/ɪkˈspaɪər/", pos:"v.", definition:"to end or become unusable after a period of time", vietnamese:"hết hạn", example:"My passport will expire next year.", translation:"Hộ chiếu của tôi sẽ hết hạn vào năm sau." },
+  { word:"precaution", ipa:"/prɪˈkɔːʃn/", pos:"n.", definition:"a step taken in advance to prevent harm", vietnamese:"biện pháp phòng ngừa", example:"Take precautions against fire.", translation:"Hãy thực hiện các biện pháp phòng ngừa hỏa hoạn." },
+  { word:"purchase", ipa:"/ˈpɜːrtʃəs/", pos:"v.", definition:"to buy something", vietnamese:"mua", example:"She purchased a new laptop.", translation:"Cô ấy đã mua một chiếc laptop mới." },
+  { word:"sincere", ipa:"/sɪnˈsɪr/", pos:"adj.", definition:"honest in one's thought and action, true", vietnamese:"chân thành", example:"Please accept my sincere apology.", translation:"Xin hãy nhận lời xin lỗi chân thành của tôi." },
+  { word:"vulnerable", ipa:"/ˈvʌlnərəbl/", pos:"adj.", definition:"describing a person who is easily harmed, hurt, or attacked", vietnamese:"dễ bị tổn thương", example:"Young children are vulnerable to illness.", translation:"Trẻ nhỏ dễ bị tổn thương vì bệnh tật." },
+  { word:"credits", ipa:"/ˈkredɪts/", pos:"n.", definition:"a list of people who made a movie, etc.", vietnamese:"danh đề; danh sách những người thực hiện phim", example:"The credits appeared at the end of the film.", translation:"Danh đề xuất hiện ở cuối bộ phim." },
+  { word:"crucial", ipa:"/ˈkruːʃl/", pos:"adj.", definition:"very important", vietnamese:"quan trọng, thiết yếu", example:"Sleep is crucial for good health.", translation:"Giấc ngủ rất quan trọng cho sức khỏe tốt." },
+  { word:"director", ipa:"/dəˈrektər/", pos:"n.", definition:"the person who decides how something appears on stage or on screen", vietnamese:"đạo diễn", example:"The director explained the scene to the actors.", translation:"Đạo diễn giải thích cảnh quay cho các diễn viên." },
+  { word:"exclusive", ipa:"/ɪkˈskluːsɪv/", pos:"adj.", definition:"only involving the thing or things mentioned", vietnamese:"độc quyền; chỉ dành riêng cho", example:"The club is exclusive to members only.", translation:"Câu lạc bộ chỉ dành riêng cho thành viên." },
+  { word:"production", ipa:"/prəˈdʌkʃn/", pos:"n.", definition:"the making of a movie", vietnamese:"sản xuất; việc làm phim", example:"The production of the film took two years.", translation:"Việc sản xuất bộ phim mất hai năm." },
+  { word:"scene", ipa:"/siːn/", pos:"n.", definition:"one part of a movie", vietnamese:"cảnh (trong phim)", example:"This is my favorite scene in the movie.", translation:"Đây là cảnh yêu thích của tôi trong phim." },
+  { word:"studio", ipa:"/ˈstuːdioʊ/", pos:"n.", definition:"a place where an artist works", vietnamese:"xưởng phim, phòng thu", example:"The band recorded their album in a studio.", translation:"Ban nhạc thu âm album trong một phòng thu." },
+  { word:"transform", ipa:"/trænsˈfɔːrm/", pos:"v.", definition:"to change completely", vietnamese:"biến đổi hoàn toàn", example:"The city has transformed in ten years.", translation:"Thành phố đã biến đổi trong mười năm." },
+  { word:"ambition", ipa:"/æmˈbɪʃn/", pos:"n.", definition:"a strong desire to achieve something", vietnamese:"tham vọng", example:"Her ambition is to become a doctor.", translation:"Tham vọng của cô ấy là trở thành bác sĩ." },
+  { word:"debut", ipa:"/ˈdeɪbjuː/", pos:"n.", definition:"the first public performance or appearance", vietnamese:"sự ra mắt lần đầu", example:"The singer made her debut last year.", translation:"Ca sĩ ra mắt lần đầu vào năm ngoái." },
+  { word:"influential", ipa:"/ˌɪnfluˈenʃl/", pos:"adj.", definition:"having the power to change people's thinking", vietnamese:"có ảnh hưởng", example:"He is an influential writer.", translation:"Ông ấy là một nhà văn có ảnh hưởng." },
+  { word:"inspiration", ipa:"/ˌɪnspəˈreɪʃn/", pos:"n.", definition:"getting a good idea of what to do", vietnamese:"cảm hứng", example:"Nature is a great source of inspiration.", translation:"Thiên nhiên là nguồn cảm hứng tuyệt vời." },
+  { word:"metaphor", ipa:"/ˈmetəfɔːr/", pos:"n.", definition:"describes something by referring to it as something else and saying the two things have similar qualities", vietnamese:"ẩn dụ", example:"The poem uses a beautiful metaphor.", translation:"Bài thơ sử dụng một ẩn dụ đẹp." },
+  { word:"passion", ipa:"/ˈpæʃn/", pos:"n.", definition:"a very strong feeling or belief", vietnamese:"đam mê", example:"She has a passion for music.", translation:"Cô ấy có niềm đam mê với âm nhạc." },
+  { word:"preserve", ipa:"/prɪˈzɜːrv/", pos:"v.", definition:"to save something or someone from being harmed or destroyed; to guard, to protect from harm or change", vietnamese:"bảo tồn, gìn giữ, bảo vệ khỏi tổn hại", example:"We must preserve our cultural heritage.", translation:"Chúng ta phải bảo tồn di sản văn hóa của mình." },
+  { word:"represent", ipa:"/ˌreprɪˈzent/", pos:"v.", definition:"to be or have the same meaning as something else", vietnamese:"đại diện, tượng trưng cho", example:"The dove represents peace.", translation:"Chim bồ câu tượng trưng cho hòa bình." },
+  { word:"achievement", ipa:"/əˈtʃiːvmənt/", pos:"n.", definition:"something important and difficult that is done", vietnamese:"thành tựu", example:"Winning the prize was a great achievement.", translation:"Giành giải thưởng là một thành tựu lớn." },
+  { word:"aspire", ipa:"/əˈspaɪər/", pos:"v.", definition:"to desire and work toward achieving something", vietnamese:"khao khát, hướng tới", example:"She aspires to be a scientist.", translation:"Cô ấy khao khát trở thành nhà khoa học." },
+  { word:"exotic", ipa:"/ɪɡˈzɑːtɪk/", pos:"adj.", definition:"unusual or interesting, usually foreign", vietnamese:"kỳ lạ, độc đáo, thường đến từ nước ngoài", example:"They tried many exotic dishes.", translation:"Họ đã thử nhiều món ăn lạ." },
+  { word:"feat", ipa:"/fiːt/", pos:"n.", definition:"an impressive achievement", vietnamese:"thành tích ấn tượng", example:"Climbing the mountain was an amazing feat.", translation:"Leo núi là một thành tích đáng kinh ngạc." },
+  { word:"goal", ipa:"/ɡoʊl/", pos:"n.", definition:"something you want to do in the future", vietnamese:"mục tiêu", example:"My goal is to speak English fluently.", translation:"Mục tiêu của tôi là nói tiếng Anh trôi chảy." },
+  { word:"record", ipa:"/ˈrekərd/", pos:"n.", definition:"the best time, distance, etc., in an athletic event", vietnamese:"kỷ lục", example:"She broke the world record.", translation:"Cô ấy đã phá kỷ lục thế giới." },
+  { word:"talent", ipa:"/ˈtælənt/", pos:"n.", definition:"being able to do something very well without practice", vietnamese:"tài năng", example:"He has a talent for drawing.", translation:"Anh ấy có tài năng vẽ." },
+  { word:"verify", ipa:"/ˈverɪfaɪ/", pos:"v.", definition:"to say that something is true", vietnamese:"xác minh", example:"Please verify your email address.", translation:"Xin hãy xác minh địa chỉ email của bạn." },
+  { word:"aggressive", ipa:"/əˈɡresɪv/", pos:"adj.", definition:"acting as if you want to fight or attack someone", vietnamese:"hung hăng, hiếu chiến", example:"The dog became aggressive.", translation:"Con chó trở nên hung hăng." },
+  { word:"amateur", ipa:"/ˈæmətʃʊr/", pos:"n.", definition:"someone who is still learning, not a professional", vietnamese:"người nghiệp dư", example:"He is just an amateur photographer.", translation:"Anh ấy chỉ là một nhiếp ảnh gia nghiệp dư." },
+  { word:"coach", ipa:"/koʊtʃ/", pos:"n.", definition:"a person who teaches, especially a sports team", vietnamese:"huấn luyện viên", example:"The coach trained the team every morning.", translation:"Huấn luyện viên huấn luyện đội mỗi sáng." },
+  { word:"enthusiastic", ipa:"/ɪnˌθuːziˈæstɪk/", pos:"adj.", definition:"very excited", vietnamese:"nhiệt tình, hào hứng", example:"She is enthusiastic about the project.", translation:"Cô ấy nhiệt tình với dự án." },
+  { word:"professional", ipa:"/prəˈfeʃənl/", pos:"adj.", definition:"related to a profession or a person who makes his or her living as an artist or athlete", vietnamese:"chuyên nghiệp", example:"He is a professional football player.", translation:"Anh ấy là một cầu thủ bóng đá chuyên nghiệp." },
+  { word:"role model", ipa:"/ˈroʊl ˌmɑːdl/", pos:"n.", definition:"a person who people admire and want to act like", vietnamese:"hình mẫu", example:"My father is my role model.", translation:"Bố tôi là hình mẫu của tôi." },
+  { word:"sense of humor", ipa:"/ˌsens əv ˈhjuːmər/", pos:"phr.", definition:"the ability to understand and laugh at funny things", vietnamese:"khiếu hài hước", example:"He has a great sense of humor.", translation:"Anh ấy có khiếu hài hước tuyệt vời." },
+  { word:"tournament", ipa:"/ˈtʊrnəmənt/", pos:"n.", definition:"a competition with a series of games until there is one winner", vietnamese:"giải đấu", example:"The tennis tournament starts next week.", translation:"Giải quần vợt bắt đầu vào tuần sau." },
+  { word:"breathe", ipa:"/briːð/", pos:"v.", definition:"to take air into your lungs and send it out again", vietnamese:"thở", example:"Take a moment to breathe deeply.", translation:"Hãy dành một chút thời gian để hít thở sâu." },
+  { word:"complex", ipa:"/kəmˈpleks/", pos:"adj.", definition:"difficult, with many parts or pieces", vietnamese:"phức tạp", example:"This is a complex problem.", translation:"Đây là một vấn đề phức tạp." },
+  { word:"consist of", ipa:"/kənˈsɪst əv/", pos:"v.", definition:"to have or to depend on something", vietnamese:"bao gồm", example:"The team consists of ten players.", translation:"Đội bao gồm mười cầu thủ." },
+  { word:"illness", ipa:"/ˈɪlnəs/", pos:"n.", definition:"being sick or unwell", vietnamese:"bệnh tật", example:"He missed school because of illness.", translation:"Anh ấy nghỉ học vì bệnh." },
+  { word:"injury", ipa:"/ˈɪndʒəri/", pos:"n.", definition:"damage to your body", vietnamese:"chấn thương", example:"The player suffered a knee injury.", translation:"Cầu thủ bị chấn thương đầu gối." },
+  { word:"suffer", ipa:"/ˈsʌfər/", pos:"v.", definition:"to have an unpleasant or difficult experience", vietnamese:"chịu đựng, trải qua điều khó chịu", example:"Many people suffer from stress.", translation:"Nhiều người chịu đựng căng thẳng." },
+  { word:"surgery", ipa:"/ˈsɜːrdʒəri/", pos:"n.", definition:"medical treatment when a doctor cuts open the body to fix or remove something", vietnamese:"phẫu thuật", example:"He needs surgery on his knee.", translation:"Anh ấy cần phẫu thuật đầu gối." },
+  { word:"treatment", ipa:"/ˈtriːtmənt/", pos:"n.", definition:"a method to make something unwell better", vietnamese:"sự điều trị, phương pháp chữa trị", example:"The treatment worked well.", translation:"Phương pháp điều trị có hiệu quả tốt." },
+  { word:"blind", ipa:"/blaɪnd/", pos:"adj.", definition:"to not be able to see", vietnamese:"mù, không thể nhìn thấy", example:"The man has been blind since birth.", translation:"Người đàn ông bị mù từ khi sinh ra." },
+  { word:"bounce", ipa:"/baʊns/", pos:"v.", definition:"to move away from a surface after hitting it", vietnamese:"nảy lên", example:"The ball bounced off the wall.", translation:"Quả bóng nảy khỏi tường." },
+  { word:"capable", ipa:"/ˈkeɪpəbl/", pos:"adj.", definition:"having the qualities or abilities needed", vietnamese:"có khả năng", example:"She is capable of doing better.", translation:"Cô ấy có khả năng làm tốt hơn." },
+  { word:"overcome", ipa:"/ˌoʊvərˈkʌm/", pos:"v.", definition:"to control a feeling or problem that was preventing you from doing something", vietnamese:"vượt qua", example:"He overcame his fear of public speaking.", translation:"Anh ấy đã vượt qua nỗi sợ nói trước công chúng." },
+  { word:"phenomenon", ipa:"/fəˈnɑːmɪnən/", pos:"n.", definition:"an event or situation that cannot be explained", vietnamese:"hiện tượng", example:"Rainbows are a natural phenomenon.", translation:"Cầu vồng là một hiện tượng tự nhiên." },
+  { word:"refine", ipa:"/rɪˈfaɪn/", pos:"v.", definition:"to make something better by making small changes", vietnamese:"cải tiến, tinh chỉnh", example:"We need to refine our plan.", translation:"Chúng ta cần cải tiến kế hoạch." },
+  { word:"sensitive", ipa:"/ˈsensətɪv/", pos:"adj.", definition:"reacting easily to very small changes", vietnamese:"nhạy cảm", example:"My skin is sensitive to the sun.", translation:"Da tôi nhạy cảm với ánh nắng." },
+  { word:"sight", ipa:"/saɪt/", pos:"n.", definition:"the ability to see", vietnamese:"thị lực, khả năng nhìn", example:"His sight is getting worse.", translation:"Thị lực của ông ấy ngày càng kém." },
+  { word:"decorate", ipa:"/ˈdekəreɪt/", pos:"v.", definition:"to beautify, to make festive", vietnamese:"trang trí", example:"We decorated the room with flowers.", translation:"Chúng tôi trang trí phòng bằng hoa." },
+  { word:"display", ipa:"/dɪˈspleɪ/", pos:"v.", definition:"to place in a position to be seen", vietnamese:"trưng bày", example:"The museum displays ancient tools.", translation:"Bảo tàng trưng bày các công cụ cổ." },
+  { word:"precious", ipa:"/ˈpreʃəs/", pos:"adj.", definition:"extremely valuable; that should not be wasted", vietnamese:"quý giá, không nên lãng phí", example:"Time is precious.", translation:"Thời gian rất quý giá." },
+  { word:"define", ipa:"/dɪˈfaɪn/", pos:"v.", definition:"to explain something, to give the meaning", vietnamese:"định nghĩa, giải thích", example:"Can you define this word?", translation:"Bạn có thể định nghĩa từ này không?" },
+  { word:"supplies", ipa:"/səˈplaɪz/", pos:"n.", definition:"a quantity of goods of a specific kind necessary for an operation", vietnamese:"vật tư, đồ dùng cần thiết", example:"We need to buy school supplies.", translation:"Chúng ta cần mua đồ dùng học tập." },
+  { word:"throw away", ipa:"/θroʊ əˈweɪ/", pos:"v.", definition:"to discard, to get rid of", vietnamese:"vứt bỏ", example:"Don't throw away that box.", translation:"Đừng vứt bỏ cái hộp đó." },
+  { word:"universal", ipa:"/ˌjuːnɪˈvɜːrsl/", pos:"adj.", definition:"found or practiced everywhere", vietnamese:"phổ quát, phổ biến ở mọi nơi", example:"Music is a universal language.", translation:"Âm nhạc là một ngôn ngữ phổ quát." },
+  { word:"approximately", ipa:"/əˈprɑːksɪmətli/", pos:"adv.", definition:"estimated, about", vietnamese:"xấp xỉ, khoảng", example:"The trip takes approximately two hours.", translation:"Chuyến đi mất khoảng hai giờ." },
+  { word:"convert", ipa:"/kənˈvɜːrt/", pos:"v.", definition:"to change from one form to another", vietnamese:"chuyển đổi", example:"We converted the garage into a bedroom.", translation:"Chúng tôi chuyển đổi nhà để xe thành phòng ngủ." },
+  { word:"detail", ipa:"/ˈdiːteɪl/", pos:"n.", definition:"a small point", vietnamese:"chi tiết", example:"Please explain in more detail.", translation:"Xin hãy giải thích chi tiết hơn." },
+  { word:"isolated", ipa:"/ˈaɪsəleɪtɪd/", pos:"adj.", definition:"to make alone or to be far away from others", vietnamese:"biệt lập, xa cách", example:"The village is very isolated.", translation:"Ngôi làng rất biệt lập." },
+  { word:"loyal", ipa:"/ˈlɔɪəl/", pos:"adj.", definition:"following and supporting a friend or organization", vietnamese:"trung thành", example:"Dogs are loyal animals.", translation:"Chó là loài vật trung thành." },
+  { word:"persuade", ipa:"/pərˈsweɪd/", pos:"v.", definition:"to lead a person or group to believe or do something by arguing or reasoning with them", vietnamese:"thuyết phục", example:"I persuaded him to come with us.", translation:"Tôi đã thuyết phục anh ấy đi cùng." },
+  { word:"response", ipa:"/rɪˈspɑːns/", pos:"n.", definition:"a reaction to something done beforehand", vietnamese:"phản hồi, phản ứng", example:"I got no response to my email.", translation:"Tôi không nhận được phản hồi cho email của mình." },
+  { word:"switch", ipa:"/swɪtʃ/", pos:"v.", definition:"to change quickly and completely", vietnamese:"chuyển đổi, thay đổi", example:"He switched to a new job.", translation:"Anh ấy chuyển sang công việc mới." },
+  { word:"appealing", ipa:"/əˈpiːlɪŋ/", pos:"adj.", definition:"interesting or attractive", vietnamese:"hấp dẫn, thú vị", example:"The offer sounds appealing.", translation:"Lời đề nghị nghe có vẻ hấp dẫn." },
+  { word:"capture", ipa:"/ˈkæptʃər/", pos:"v.", definition:"to film or record for the purpose of preserving", vietnamese:"ghi lại, quay lại để lưu giữ", example:"The film captures the beauty of nature.", translation:"Bộ phim ghi lại vẻ đẹp của thiên nhiên." },
+  { word:"extinct", ipa:"/ɪkˈstɪŋkt/", pos:"adj.", definition:"something that has ended or died out", vietnamese:"tuyệt chủng", example:"Dinosaurs became extinct long ago.", translation:"Khủng long đã tuyệt chủng từ lâu." },
+  { word:"format", ipa:"/ˈfɔːrmæt/", pos:"n.", definition:"the way in which something is presented", vietnamese:"định dạng, cách trình bày", example:"The report is in a clear format.", translation:"Báo cáo được trình bày ở định dạng rõ ràng." },
+  { word:"genre", ipa:"/ˈʒɑːnrə/", pos:"n.", definition:"type or style of music, art, or literature", vietnamese:"thể loại", example:"My favorite genre is jazz.", translation:"Thể loại yêu thích của tôi là nhạc jazz." },
+  { word:"lyrics", ipa:"/ˈlɪrɪks/", pos:"n.", definition:"the words of a song", vietnamese:"lời bài hát", example:"The lyrics of this song are beautiful.", translation:"Lời bài hát này rất đẹp." },
+  { word:"roots", ipa:"/ruːts/", pos:"n.", definition:"the place or culture that something or someone comes from", vietnamese:"nguồn gốc, cội nguồn", example:"She never forgot her roots.", translation:"Cô ấy không bao giờ quên nguồn gốc của mình." },
+  { word:"essential", ipa:"/ɪˈsenʃl/", pos:"adj.", definition:"necessary, very important", vietnamese:"thiết yếu, rất cần thiết", example:"Water is essential for life.", translation:"Nước rất cần thiết cho sự sống." },
+  { word:"album", ipa:"/ˈælbəm/", pos:"n.", definition:"a collection of music put on a record or CD", vietnamese:"album (tập nhạc)", example:"The band released a new album.", translation:"Ban nhạc đã phát hành album mới." },
+  { word:"boundary", ipa:"/ˈbaʊndəri/", pos:"n.", definition:"a real or imaginary line that makes the edge of a location", vietnamese:"ranh giới", example:"The river forms the boundary between the two countries.", translation:"Con sông tạo thành ranh giới giữa hai quốc gia." },
+  { word:"incorporate", ipa:"/ɪnˈkɔːrpəreɪt/", pos:"v.", definition:"to include things into a group", vietnamese:"kết hợp, đưa vào", example:"We incorporated your ideas into the plan.", translation:"Chúng tôi đã kết hợp ý tưởng của bạn vào kế hoạch." },
+  { word:"mature", ipa:"/məˈtʃʊr/", pos:"adj.", definition:"becoming older and wiser", vietnamese:"trưởng thành", example:"She is very mature for her age.", translation:"Cô ấy rất trưởng thành so với tuổi." },
+  { word:"pioneer", ipa:"/ˌpaɪəˈnɪr/", pos:"n.", definition:"the first person to do something or to work on something", vietnamese:"người tiên phong", example:"She was a pioneer in computer science.", translation:"Bà ấy là người tiên phong trong khoa học máy tính." },
+  { word:"release", ipa:"/rɪˈliːs/", pos:"v.", definition:"to publish a book, DVD, or CD", vietnamese:"phát hành", example:"The movie will be released next month.", translation:"Bộ phim sẽ được phát hành vào tháng sau." },
+  { word:"revolution", ipa:"/ˌrevəˈluːʃn/", pos:"n.", definition:"a complete change in thinking or methods", vietnamese:"cuộc cách mạng; sự thay đổi hoàn toàn", example:"The Internet caused a revolution in communication.", translation:"Internet đã gây ra một cuộc cách mạng trong liên lạc." },
+  { word:"statement", ipa:"/ˈsteɪtmənt/", pos:"n.", definition:"something written or said that tells an opinion or gives facts", vietnamese:"tuyên bố, phát biểu", example:"The company made an official statement.", translation:"Công ty đã đưa ra tuyên bố chính thức." },
+  { word:"campus", ipa:"/ˈkæmpəs/", pos:"n.", definition:"the land and buildings of a university or college", vietnamese:"khuôn viên trường", example:"The campus is very beautiful in autumn.", translation:"Khuôn viên trường rất đẹp vào mùa thu." },
+  { word:"concept", ipa:"/ˈkɑːnsept/", pos:"n.", definition:"an idea about how something is or should be done", vietnamese:"khái niệm", example:"This is a difficult concept to understand.", translation:"Đây là một khái niệm khó hiểu." },
+  { word:"enterprising", ipa:"/ˈentərpraɪzɪŋ/", pos:"adj.", definition:"able to make money from new, interesting ideas", vietnamese:"có tinh thần kinh doanh, táo bạo", example:"She is an enterprising young woman.", translation:"Cô ấy là một phụ nữ trẻ có tinh thần kinh doanh." },
+  { word:"expand", ipa:"/ɪkˈspænd/", pos:"v.", definition:"to get bigger", vietnamese:"mở rộng", example:"The company plans to expand.", translation:"Công ty có kế hoạch mở rộng." },
+  { word:"retail", ipa:"/ˈriːteɪl/", pos:"n.", definition:"concerning the sale of things to people in stores", vietnamese:"bán lẻ", example:"She works in retail.", translation:"Cô ấy làm việc trong ngành bán lẻ." },
+  { word:"spur", ipa:"/spɜːr/", pos:"v.", definition:"motivate, inspire", vietnamese:"thúc đẩy, truyền cảm hứng", example:"The news spurred him to work harder.", translation:"Tin tức đã thúc đẩy anh ấy làm việc chăm chỉ hơn." },
+  { word:"stationery", ipa:"/ˈsteɪʃəneri/", pos:"n.", definition:"products used for writing letters and notes", vietnamese:"văn phòng phẩm", example:"I bought some stationery for school.", translation:"Tôi đã mua một ít văn phòng phẩm cho trường." },
+  { word:"resource", ipa:"/rɪˈsɔːrs/", pos:"n.", definition:"money, skills, or time that is available when needed", vietnamese:"nguồn lực", example:"We don't have enough resources.", translation:"Chúng tôi không có đủ nguồn lực." },
+  { word:"fundamental", ipa:"/ˌfʌndəˈmentl/", pos:"adj.", definition:"most important and necessary part of something", vietnamese:"cơ bản, nền tảng", example:"Reading is a fundamental skill.", translation:"Đọc là một kỹ năng cơ bản." },
+  { word:"inclined to", ipa:"/ɪnˈklaɪnd tu/", pos:"phr.", definition:"to believe something is likely to be correct", vietnamese:"có xu hướng (nghiêng về)", example:"I'm inclined to agree with you.", translation:"Tôi có xu hướng đồng ý với bạn." },
+  { word:"investigate", ipa:"/ɪnˈvestɪɡeɪt/", pos:"v.", definition:"to try to find the truth or cause", vietnamese:"điều tra", example:"Police are investigating the case.", translation:"Cảnh sát đang điều tra vụ án." },
+  { word:"opinion", ipa:"/əˈpɪnjən/", pos:"n.", definition:"a personal belief that is not factual", vietnamese:"ý kiến", example:"In my opinion, this is the best choice.", translation:"Theo ý kiến của tôi, đây là lựa chọn tốt nhất." },
+  { word:"persuasive", ipa:"/pərˈsweɪsɪv/", pos:"adj.", definition:"to make other people believe something or do what is asked", vietnamese:"có tính thuyết phục", example:"His argument was very persuasive.", translation:"Lập luận của anh ấy rất thuyết phục." },
+  { word:"regulation", ipa:"/ˌreɡjuˈleɪʃn/", pos:"n.", definition:"official rule", vietnamese:"quy định", example:"You must follow safety regulations.", translation:"Bạn phải tuân theo các quy định an toàn." },
+  { word:"theory", ipa:"/ˈθɪəri/", pos:"n.", definition:"an idea that explains why something happens but has not been proven to be true", vietnamese:"lý thuyết", example:"This theory has not been proven.", translation:"Lý thuyết này chưa được chứng minh." },
+  { word:"thrive", ipa:"/θraɪv/", pos:"v.", definition:"to do exceptionally well", vietnamese:"phát triển mạnh, thịnh vượng", example:"Plants thrive in sunlight.", translation:"Cây cối phát triển mạnh dưới ánh nắng." },
+  { word:"consume", ipa:"/kənˈsuːm/", pos:"v.", definition:"to eat and drink", vietnamese:"tiêu thụ, ăn uống", example:"People consume too much sugar.", translation:"Mọi người tiêu thụ quá nhiều đường." },
+  { word:"culinary", ipa:"/ˈkʌlɪneri/", pos:"adj.", definition:"related to food", vietnamese:"thuộc ẩm thực", example:"She studied culinary arts in France.", translation:"Cô ấy học nghệ thuật ẩm thực ở Pháp." },
+  { word:"cure", ipa:"/kjʊr/", pos:"v.", definition:"to fix an illness completely", vietnamese:"chữa khỏi", example:"Doctors are trying to cure the disease.", translation:"Bác sĩ đang cố gắng chữa khỏi căn bệnh." },
+  { word:"enhance", ipa:"/ɪnˈhæns/", pos:"v.", definition:"to make more attractive or improved", vietnamese:"nâng cao, cải thiện", example:"Music can enhance your mood.", translation:"Âm nhạc có thể nâng cao tâm trạng của bạn." },
+  { word:"equipment", ipa:"/ɪˈkwɪpmənt/", pos:"n.", definition:"the tools and other things needed to do a job or activity", vietnamese:"thiết bị, dụng cụ", example:"The gym has modern equipment.", translation:"Phòng tập có thiết bị hiện đại." },
+  { word:"evolve", ipa:"/ɪˈvɑːlv/", pos:"v.", definition:"to change for the better", vietnamese:"tiến hóa, phát triển", example:"Language evolves over time.", translation:"Ngôn ngữ tiến hóa theo thời gian." },
+  { word:"extract", ipa:"/ɪkˈstrækt/", pos:"v.", definition:"to take out", vietnamese:"chiết xuất, lấy ra", example:"They extract oil from olives.", translation:"Họ chiết xuất dầu từ ô liu." },
+  { word:"resemble", ipa:"/rɪˈzembl/", pos:"v.", definition:"to look like", vietnamese:"giống với", example:"She resembles her mother.", translation:"Cô ấy giống mẹ mình." },
+  { word:"crave", ipa:"/kreɪv/", pos:"v.", definition:"to want something very much", vietnamese:"khao khát, thèm muốn", example:"I crave chocolate sometimes.", translation:"Đôi khi tôi thèm sô-cô-la." },
+  { word:"decay", ipa:"/dɪˈkeɪ/", pos:"v.", definition:"to slowly become destroyed", vietnamese:"phân hủy, mục nát", example:"The old building is decaying.", translation:"Tòa nhà cũ đang phân hủy." },
+  { word:"distinctive", ipa:"/dɪˈstɪŋktɪv/", pos:"adj.", definition:"different from others, special", vietnamese:"đặc biệt, dễ nhận biết", example:"She has a distinctive voice.", translation:"Cô ấy có một giọng nói đặc biệt." },
+  { word:"moderation", ipa:"/ˌmɑːdəˈreɪʃn/", pos:"n.", definition:"in healthy or reasonable amounts", vietnamese:"sự điều độ, mức độ hợp lý", example:"Eat sweets in moderation.", translation:"Ăn đồ ngọt một cách điều độ." },
+  { word:"nature", ipa:"/ˈneɪtʃər/", pos:"n.", definition:"the basic character or quality of something", vietnamese:"bản chất, tính chất", example:"She has a kind nature.", translation:"Cô ấy có bản chất tốt bụng." },
+  { word:"nutritional", ipa:"/nuˈtrɪʃənl/", pos:"adj.", definition:"related to the vitamins, minerals, etc., in food", vietnamese:"thuộc dinh dưỡng", example:"The label shows nutritional information.", translation:"Nhãn hiển thị thông tin dinh dưỡng." },
+  { word:"stimulate", ipa:"/ˈstɪmjuleɪt/", pos:"v.", definition:"to increase energy or activity", vietnamese:"kích thích", example:"Coffee stimulates the brain.", translation:"Cà phê kích thích não bộ." },
+  { word:"undergo", ipa:"/ˌʌndərˈɡoʊ/", pos:"v.", definition:"to experience something", vietnamese:"trải qua", example:"He will undergo surgery tomorrow.", translation:"Anh ấy sẽ trải qua phẫu thuật vào ngày mai." },
+  { word:"access", ipa:"/ˈækses/", pos:"n./v.", definition:"the right to enter a place or use a thing; to enter or use something", vietnamese:"quyền truy cập; truy cập", example:"Students can access the library online.", translation:"Học sinh có thể truy cập thư viện trực tuyến." },
+  { word:"content", ipa:"/ˈkɑːntent/", pos:"n.", definition:"information", vietnamese:"nội dung", example:"The website has interesting content.", translation:"Trang web có nội dung thú vị." },
+  { word:"ignore", ipa:"/ɪɡˈnɔːr/", pos:"v.", definition:"to not pay attention to something on purpose", vietnamese:"phớt lờ, lờ đi", example:"Don't ignore the warning signs.", translation:"Đừng phớt lờ các dấu hiệu cảnh báo." },
+  { word:"interactive", ipa:"/ˌɪntərˈæktɪv/", pos:"adj.", definition:"something that a person can communicate with or that responds to a user's actions", vietnamese:"tương tác", example:"This is an interactive learning app.", translation:"Đây là một ứng dụng học tập tương tác." },
+  { word:"prominently", ipa:"/ˈprɑːmɪnəntli/", pos:"adv.", definition:"in an important way, easily seen", vietnamese:"một cách nổi bật", example:"The logo appears prominently on the page.", translation:"Logo xuất hiện nổi bật trên trang." },
+  { word:"subtle", ipa:"/ˈsʌtl/", pos:"adj.", definition:"not easy to notice", vietnamese:"tinh tế, khó nhận ra", example:"There is a subtle difference between the two.", translation:"Có một sự khác biệt tinh tế giữa hai cái." },
+  { word:"visible", ipa:"/ˈvɪzəbl/", pos:"adj.", definition:"something that can be seen", vietnamese:"có thể nhìn thấy", example:"The stars are visible tonight.", translation:"Những ngôi sao có thể nhìn thấy tối nay." },
+  { word:"virtually", ipa:"/ˈvɜːrtʃuəli/", pos:"adv.", definition:"almost, practically", vietnamese:"hầu như, gần như", example:"The two designs are virtually the same.", translation:"Hai thiết kế hầu như giống nhau." },
+  { word:"consumer", ipa:"/kənˈsuːmər/", pos:"n.", definition:"someone who uses a product", vietnamese:"người tiêu dùng", example:"Consumers want better quality.", translation:"Người tiêu dùng muốn chất lượng tốt hơn." },
+  { word:"flatter", ipa:"/ˈflætər/", pos:"v.", definition:"to say something to make a product or person look or feel good", vietnamese:"tâng bốc, làm hài lòng", example:"He flattered her to get her help.", translation:"Anh ấy tâng bốc cô ấy để được giúp đỡ." },
+  { word:"insensitive", ipa:"/ɪnˈsensətɪv/", pos:"adj.", definition:"not noticing or caring about another person's feelings", vietnamese:"vô cảm, không nhạy cảm", example:"His comment was insensitive.", translation:"Bình luận của anh ấy thật vô cảm." },
+  { word:"make fun of", ipa:"/meɪk fʌn əv/", pos:"exp.", definition:"to say something that hurts or upsets someone", vietnamese:"chế giễu, trêu chọc", example:"Don't make fun of your classmates.", translation:"Đừng chế giễu bạn cùng lớp." },
+  { word:"publicity", ipa:"/pʌbˈlɪsəti/", pos:"n.", definition:"news to make a product or event popular", vietnamese:"sự quảng bá, sự công khai", example:"The event received a lot of publicity.", translation:"Sự kiện nhận được nhiều sự quảng bá." },
+  { word:"slogan", ipa:"/ˈsloʊɡən/", pos:"n.", definition:"a saying or phrase that expresses a group's or a company's main message", vietnamese:"khẩu hiệu", example:"The company has a new slogan.", translation:"Công ty có một khẩu hiệu mới." },
+  { word:"submit", ipa:"/səbˈmɪt/", pos:"v.", definition:"to give to somebody for their approval", vietnamese:"nộp, trình", example:"Please submit your report by Friday.", translation:"Xin hãy nộp báo cáo trước thứ Sáu." },
+  { word:"supply", ipa:"/səˈplaɪ/", pos:"v.", definition:"to provide something that is wanted or needed", vietnamese:"cung cấp", example:"The company supplies fresh vegetables.", translation:"Công ty cung cấp rau tươi." },
+  { word:"anticipate", ipa:"/ænˈtɪsɪpeɪt/", pos:"v.", definition:"to expect something to happen and to be ready for it", vietnamese:"dự đoán, lường trước", example:"We anticipate a busy season.", translation:"Chúng tôi dự đoán một mùa bận rộn." },
+  { word:"chemical", ipa:"/ˈkemɪkl/", pos:"n.", definition:"a substance in chemistry or made from a chemical process", vietnamese:"hóa chất", example:"These chemicals are dangerous.", translation:"Những hóa chất này rất nguy hiểm." },
+  { word:"clean", ipa:"/kliːn/", pos:"v.", definition:"to clean a bathroom or kitchen with strong chemicals like bleach", vietnamese:"làm sạch", example:"She cleans the kitchen every day.", translation:"Cô ấy làm sạch nhà bếp mỗi ngày." },
+  { word:"consequence", ipa:"/ˈkɑːnsɪkwens/", pos:"n.", definition:"something that happens as a result of an action", vietnamese:"hậu quả", example:"He didn't think about the consequences.", translation:"Anh ấy không nghĩ về hậu quả." },
+  { word:"struggle", ipa:"/ˈstrʌɡl/", pos:"v.", definition:"to deal with something with great difficulty", vietnamese:"vật lộn, gặp khó khăn", example:"She struggles with math.", translation:"Cô ấy vật lộn với môn toán." },
+  { word:"devastating", ipa:"/ˈdevəsteɪtɪŋ/", pos:"adj.", definition:"something badly damaging", vietnamese:"tàn phá, gây thiệt hại nặng", example:"The storm had a devastating effect.", translation:"Cơn bão có tác động tàn phá." },
+  { word:"keen", ipa:"/kiːn/", pos:"adj.", definition:"interested in", vietnamese:"hứng thú, quan tâm", example:"He is keen on learning languages.", translation:"Anh ấy hứng thú với việc học ngôn ngữ." },
+  { word:"account for", ipa:"/əˈkaʊnt fɔːr/", pos:"phr.", definition:"to form an amount or part of something", vietnamese:"chiếm (một phần); giải thích", example:"Women account for half of the workforce.", translation:"Phụ nữ chiếm một nửa lực lượng lao động." },
+  { word:"adopt", ipa:"/əˈdɑːpt/", pos:"v.", definition:"to start to use a particular style or behavior", vietnamese:"áp dụng, chấp nhận", example:"The school adopted a new teaching method.", translation:"Trường đã áp dụng một phương pháp giảng dạy mới." },
+  { word:"deprive", ipa:"/dɪˈpraɪv/", pos:"v.", definition:"to stop something from happening or being used", vietnamese:"tước đoạt", example:"He was deprived of his freedom.", translation:"Anh ấy bị tước đoạt tự do." },
+  { word:"estimated", ipa:"/ˈestɪmeɪtɪd/", pos:"adj.", definition:"approximate, about", vietnamese:"ước tính, khoảng", example:"The estimated cost is five hundred dollars.", translation:"Chi phí ước tính là năm trăm đô la." },
+  { word:"ethical", ipa:"/ˈeθɪkl/", pos:"adj.", definition:"the idea of what is right and wrong", vietnamese:"thuộc đạo đức", example:"This is an ethical issue.", translation:"Đây là một vấn đề đạo đức." },
+  { word:"impact", ipa:"/ˈɪmpækt/", pos:"n.", definition:"an effect that is large or important", vietnamese:"tác động", example:"The new law had a big impact.", translation:"Luật mới có tác động lớn." },
+  { word:"modify", ipa:"/ˈmɑːdɪfaɪ/", pos:"v.", definition:"to change or alter partially", vietnamese:"sửa đổi, thay đổi một phần", example:"We modified the design.", translation:"Chúng tôi đã sửa đổi thiết kế." },
+  { word:"vital", ipa:"/ˈvaɪtl/", pos:"adj.", definition:"very important or necessary", vietnamese:"thiết yếu, rất quan trọng", example:"Water is vital for survival.", translation:"Nước rất cần thiết cho sự sống." },
+  { word:"alarming", ipa:"/əˈlɑːrmɪŋ/", pos:"adj.", definition:"making someone feel worried or scared", vietnamese:"đáng báo động", example:"The news is alarming.", translation:"Tin tức thật đáng báo động." },
+  { word:"accumulate", ipa:"/əˈkjuːmjəleɪt/", pos:"v.", definition:"to gradually become more and more", vietnamese:"tích lũy", example:"Dust accumulates on the shelf.", translation:"Bụi tích lũy trên kệ." },
+  { word:"ambitious", ipa:"/æmˈbɪʃəs/", pos:"adj.", definition:"(of a plan) large-scale, needing a lot of work to succeed", vietnamese:"đầy tham vọng, quy mô lớn", example:"This is an ambitious project.", translation:"Đây là một dự án đầy tham vọng." },
+  { word:"launch", ipa:"/lɔːntʃ/", pos:"v.", definition:"to start something big and important", vietnamese:"khởi động, phát động", example:"The company will launch a new product.", translation:"Công ty sẽ khởi động một sản phẩm mới." },
+  { word:"persistence", ipa:"/pərˈsɪstəns/", pos:"n.", definition:"determination to do something that is difficult and that other people do not support", vietnamese:"sự kiên trì", example:"Her persistence paid off.", translation:"Sự kiên trì của cô ấy đã được đền đáp." },
+  { word:"unite", ipa:"/juˈnaɪt/", pos:"v.", definition:"to come together or form a group to achieve something", vietnamese:"đoàn kết, hợp nhất", example:"The team united to win the game.", translation:"Đội đoàn kết để giành chiến thắng." },
+  { word:"volunteer", ipa:"/ˌvɑːlənˈtɪr/", pos:"v.", definition:"to agree to do something of one's own free will rather than by necessity", vietnamese:"tình nguyện", example:"She volunteered to help the elderly.", translation:"Cô ấy tình nguyện giúp đỡ người già." },
+  { word:"waste", ipa:"/weɪst/", pos:"n.", definition:"unwanted or worthless materials left after a process", vietnamese:"chất thải, rác thải", example:"We should reduce waste.", translation:"Chúng ta nên giảm chất thải." },
+  { word:"availability", ipa:"/əˌveɪləˈbɪləti/", pos:"n.", definition:"being easily found and used", vietnamese:"sự sẵn có", example:"The availability of clean water is a problem.", translation:"Sự sẵn có của nước sạch là một vấn đề." },
+  { word:"drastically", ipa:"/ˈdræstɪkli/", pos:"adv.", definition:"extreme and sudden", vietnamese:"một cách mạnh mẽ, đột ngột", example:"Prices dropped drastically.", translation:"Giá cả giảm mạnh." },
+  { word:"endangered", ipa:"/ɪnˈdeɪndʒərd/", pos:"adj.", definition:"putting someone or something in danger of being hurt, damaged, or destroyed", vietnamese:"có nguy cơ tuyệt chủng, bị đe dọa", example:"Pandas are an endangered species.", translation:"Gấu trúc là một loài có nguy cơ tuyệt chủng." },
+  { word:"exceed", ipa:"/ɪkˈsiːd/", pos:"v.", definition:"to be more than what is expected", vietnamese:"vượt quá", example:"The cost must not exceed one hundred dollars.", translation:"Chi phí không được vượt quá một trăm đô la." },
+  { word:"lack", ipa:"/læk/", pos:"n.", definition:"when there is not enough of something", vietnamese:"sự thiếu hụt", example:"There is a lack of clean water.", translation:"Có sự thiếu hụt nước sạch." },
+  { word:"shortage", ipa:"/ˈʃɔːrtɪdʒ/", pos:"n.", definition:"a state of not having enough, a lack of something", vietnamese:"sự thiếu hụt", example:"There is a shortage of doctors.", translation:"Có sự thiếu hụt bác sĩ." },
+  { word:"strain", ipa:"/streɪn/", pos:"n.", definition:"worry that is caused by working or thinking too much", vietnamese:"căng thẳng, áp lực", example:"The job puts a strain on him.", translation:"Công việc gây căng thẳng cho anh ấy." },
+  { word:"sustain", ipa:"/səˈsteɪn/", pos:"v.", definition:"to be used at a level that won't damage the environment", vietnamese:"duy trì, chống đỡ", example:"We need to sustain this growth.", translation:"Chúng ta cần duy trì sự tăng trưởng này." }
+];
+
+/* ============================================================
+   CONSTANTS
+   ============================================================ */
+const STORAGE_KEY = 'vocabMaster.v1';
+const POS_MAP = { 'n.':'noun', 'v.':'verb', 'adj.':'adjective', 'adv.':'adverb', 'exp.':'expression', 'phr.':'phrase' };
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let state = null;
+
+function defaultState(){
+  return {
+    progress: {},              // wordId -> {status, correct, incorrect, reviews, mastered, difficult, favourite, lastReviewed}
+    stats: {
+      totalReviews: 0,
+      correct: 0,
+      incorrect: 0,
+      quizCorrect: 0, quizTotal: 0,
+      listeningCorrect: 0, listeningTotal: 0,
+      spellingCorrect: 0, spellingTotal: 0,
+      contextCorrect: 0, contextTotal: 0,
+      sessions: 0,
+      timeSec: 0,
+      daily: {},               // 'YYYY-MM-DD' -> words reviewed
+      history: []              // [{date, type, score, total}]
+    },
+    settings: { dailyGoal: 10 }
+  };
+}
+
+/* ============================================================
+   LOCAL STORAGE
+   ============================================================ */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw){ state = defaultState(); return; }
+    const parsed = JSON.parse(raw);
+    const base = defaultState();
+    state = {
+      progress: parsed.progress || {},
+      stats: Object.assign(base.stats, parsed.stats || {}),
+      settings: Object.assign(base.settings, parsed.settings || {})
+    };
+    if(!state.stats.daily) state.stats.daily = {};
+    if(!Array.isArray(state.stats.history)) state.stats.history = [];
+  }catch(e){
+    state = defaultState();
+  }
+}
+
+let saveTimer = null;
+function saveState(immediate){
+  if(saveTimer){ clearTimeout(saveTimer); saveTimer = null; }
+  if(immediate){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* quota */ }
+    return;
+  }
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* quota */ }
+  }, 220);
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function esc(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function todayStr(d){
+  const dt = d || new Date();
+  const y = dt.getFullYear();
+  const m = String(dt.getMonth()+1).padStart(2,'0');
+  const day = String(dt.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
+function wordId(w){ return w.word.toLowerCase(); }
+function getWordById(id){ return vocabulary.find(w => wordId(w) === id); }
+function posCategories(pos){
+  return String(pos).split('/').map(p => POS_MAP[p.trim()] || p.trim().toLowerCase()).filter(Boolean);
+}
+function formatTime(sec){
+  const h = Math.floor(sec/3600);
+  const m = Math.floor((sec%3600)/60);
+  if(h > 0) return h + 'h ' + m + 'm';
+  if(m > 0) return m + 'm';
+  return sec + 's';
+}
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(()=> el.classList.remove('show'), 2000);
+}
+
+/* ============================================================
+   SPEECH (British English)
+   ============================================================ */
+let britishVoice = null;
+let voicesReady = false;
+
+function pickVoice(){
+  if(!('speechSynthesis' in window)) return;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if(!voices.length) return;
+  voicesReady = true;
+  britishVoice =
+    voices.find(v => v.lang === 'en-GB' && /female|Google|Serena|Kate|Sonia|Libby/i.test(v.name)) ||
+    voices.find(v => v.lang === 'en-GB') ||
+    voices.find(v => v.lang && v.lang.replace('_','-').toLowerCase() === 'en-gb') ||
+    voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) ||
+    null;
+  updateVoiceInfo();
+}
+
+function updateVoiceInfo(){
+  const el = document.getElementById('voiceInfo');
+  if(!el) return;
+  if(!('speechSynthesis' in window)){
+    el.textContent = 'Speech synthesis is not supported in this browser.';
+    return;
+  }
+  if(britishVoice){
+    el.textContent = 'Using: ' + britishVoice.name + ' (' + britishVoice.lang + ')';
+  } else if(voicesReady){
+    el.textContent = 'No British voice found — falling back to the default English voice.';
+  } else {
+    el.textContent = 'Loading available voices…';
+  }
+}
+
+function speak(text, rate){
+  if(!('speechSynthesis' in window)){ toast('Speech synthesis is not supported in this browser.'); return; }
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB';
+    u.rate = rate || 0.95;
+    u.pitch = 1;
+    if(britishVoice) u.voice = britishVoice;
+    window.speechSynthesis.speak(u);
+  }catch(e){ /* noop */ }
+}
+
+if('speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged = pickVoice;
+  pickVoice();
+  setTimeout(pickVoice, 350);
+}
+
+/* ============================================================
+   PROGRESS TRACKING
+   ============================================================ */
+function ensureWord(id){
+  if(!state.progress[id]){
+    state.progress[id] = {
+      status:'new', correct:0, incorrect:0, reviews:0,
+      mastered:false, difficult:false, favourite:false, lastReviewed:null
+    };
+  }
+  return state.progress[id];
+}
+function getProgress(id){
+  return state.progress[id] || { status:'new', correct:0, incorrect:0, reviews:0, mastered:false, difficult:false, favourite:false, lastReviewed:null };
+}
+function statusOf(id){ return getProgress(id).status; }
+
+/**
+ * Record an answer for a word and update its learning status.
+ * @param {string} id word id
+ * @param {boolean} correct
+ * @param {string} category 'quiz' | 'listening' | 'spelling' | 'context' | 'flashcard'
+ */
+function recordAnswer(id, correct, category){
+  const p = ensureWord(id);
+  p.reviews++;
+  p.lastReviewed = todayStr();
+  if(correct) p.correct++; else p.incorrect++;
+
+  // Status progression: new -> learning -> familiar -> mastered
+  const acc = p.reviews > 0 ? p.correct / p.reviews : 0;
+  if(p.reviews >= 5 && p.correct >= 4 && acc >= 0.8){
+    p.status = 'mastered'; p.mastered = true;
+  } else if(p.reviews >= 3 && p.correct >= 2){
+    p.status = 'familiar'; p.mastered = false;
+  } else if(p.reviews >= 1){
+    p.status = 'learning'; p.mastered = false;
+  }
+
+  // Global stats
+  state.stats.totalReviews++;
+  if(correct) state.stats.correct++; else state.stats.incorrect++;
+
+  if(category === 'listening'){
+    state.stats.listeningTotal++;
+    if(correct) state.stats.listeningCorrect++;
+  }
+  if(category === 'spelling'){
+    state.stats.spellingTotal++;
+    if(correct) state.stats.spellingCorrect++;
+  }
+  if(category === 'context'){
+    state.stats.contextTotal++;
+    if(correct) state.stats.contextCorrect++;
+  }
+  if(category === 'quiz'){
+    state.stats.quizTotal++;
+    if(correct) state.stats.quizCorrect++;
+  }
+
+  // Daily goal counter
+  const d = todayStr();
+  state.stats.daily[d] = (state.stats.daily[d] || 0) + 1;
+
+  saveState();
+  refreshAll();
+}
+
+function addSessionHistory(type, score, total){
+  state.stats.sessions++;
+  state.stats.history.unshift({ date: todayStr(), type: type, score: score, total: total });
+  if(state.stats.history.length > 40) state.stats.history.length = 40;
+  saveState();
+}
+
+function calcStreak(){
+  const active = new Set(Object.keys(state.stats.daily).filter(k => state.stats.daily[k] > 0));
+  if(!active.size) return 0;
+  let streak = 0;
+  const cur = new Date();
+  if(!active.has(todayStr(cur))) cur.setDate(cur.getDate() - 1);
+  while(active.has(todayStr(cur))){
+    streak++;
+    cur.setDate(cur.getDate() - 1);
+  }
+  return streak;
+}
+
+function counts(){
+  let learned = 0, mastered = 0, difficult = 0, favourite = 0;
+  vocabulary.forEach(w => {
+    const p = getProgress(wordId(w));
+    if(p.status !== 'new') learned++;
+    if(p.status === 'mastered') mastered++;
+    if(p.difficult) difficult++;
+    if(p.favourite) favourite++;
+  });
+  return { total: vocabulary.length, learned, mastered, difficult, favourite, remaining: vocabulary.length - learned };
+}
+
+/* ============================================================
+   SPACED REVIEW — deck building
+   ============================================================ */
+/**
+ * Build a prioritised deck: difficult words first, then due reviews,
+ * then words still being learned, then new words.
+ */
+function buildDeck(size){
+  const today = new Date();
+  const scored = vocabulary.map(w => {
+    const id = wordId(w);
+    const p = getProgress(id);
+    let score = Math.random() * 5;
+    if(p.difficult) score += 120;
+    if(p.incorrect > p.correct) score += 60;
+    if(p.status === 'new') score += 35;
+    if(p.status === 'learning') score += 45;
+    if(p.status === 'familiar') score += 20;
+    if(p.status === 'mastered') score -= 20;
+    if(p.lastReviewed){
+      const parts = p.lastReviewed.split('-').map(Number);
+      const last = new Date(parts[0], parts[1]-1, parts[2]);
+      const days = Math.floor((today - last) / 86400000);
+      if(days >= 3) score += 25 + Math.min(days, 20);
+    } else {
+      score += 15;
+    }
+    return { word: w, score };
+  });
+  scored.sort((a,b) => b.score - a.score);
+  const n = size === 'all' ? scored.length : Math.min(size, scored.length);
+  return scored.slice(0, n).map(s => s.word);
+}
+
+/* ============================================================
+   FLASHCARD ENGINE
+   ============================================================ */
+const flashcard = {
+  deck: [],
+  index: 0,
+  flipped: false,
+  size: 10
+};
+
+function startDeck(size){
+  flashcard.size = size;
+  flashcard.deck = buildDeck(size);
+  flashcard.index = 0;
+  flashcard.flipped = false;
+  renderFlashcard();
+}
+
+function currentCard(){ return flashcard.deck[flashcard.index]; }
+
+function renderFlashcard(){
+  const card = document.getElementById('fcCard');
+  const w = currentCard();
+  const counter = document.getElementById('fcCounter');
+  const statusRow = document.getElementById('fcStatusRow');
+
+  if(!w){
+    document.getElementById('fcWord').textContent = 'No words';
+    document.getElementById('fcIpa').textContent = '';
+    document.getElementById('fcPos').textContent = '';
+    counter.textContent = '—';
+    statusRow.innerHTML = '';
+    return;
+  }
+
+  card.classList.toggle('flipped', flashcard.flipped);
+
+  const p = getProgress(wordId(w));
+
+  document.getElementById('fcPos').textContent = w.pos;
+  document.getElementById('fcWord').textContent = w.word;
+  document.getElementById('fcIpa').textContent = w.ipa;
+  document.getElementById('fcBackWord').textContent = w.word;
+  document.getElementById('fcBackPos').textContent = w.pos + '  ' + w.ipa;
+  document.getElementById('fcDef').textContent = w.definition;
+  document.getElementById('fcVi').textContent = w.vietnamese;
+  document.getElementById('fcExample').textContent = w.example;
+  document.getElementById('fcTranslation').textContent = w.translation;
+
+  counter.textContent = 'Card ' + (flashcard.index + 1) + ' / ' + flashcard.deck.length;
+
+  const favBtn = document.getElementById('fcFav');
+  favBtn.innerHTML = p.favourite ? '💙 Favourite' : '🤍 Favourite';
+  const diffBtn = document.getElementById('fcDifficult');
+  diffBtn.innerHTML = p.difficult ? '⭐ Difficult (on)' : '⭐ Difficult';
+
+  statusRow.innerHTML =
+    '<span class="badge ' + p.status + '">' + p.status + '</span>' +
+    (p.difficult ? '<span class="badge learning">difficult</span>' : '') +
+    (p.favourite ? '<span class="badge familiar">favourite</span>' : '') +
+    '<span class="badge new">✔ ' + p.correct + ' · ✘ ' + p.incorrect + '</span>';
+}
+
+function flipCard(){ flashcard.flipped = !flashcard.flipped; document.getElementById('fcCard').classList.toggle('flipped', flashcard.flipped); }
+function nextCard(){ if(flashcard.index < flashcard.deck.length - 1){ flashcard.index++; flashcard.flipped = false; renderFlashcard(); } else { toast('You reached the end of the deck!'); } }
+function prevCard(){ if(flashcard.index > 0){ flashcard.index--; flashcard.flipped = false; renderFlashcard(); } }
+
+/* ============================================================
+   QUIZ ENGINE
+   ============================================================ */
+const quiz = {
+  type: null,
+  length: 10,
+  questions: [],
+  index: 0,
+  answered: false,
+  score: 0,
+  results: []
+};
+
+/** Replace a target word inside a sentence with a blank. */
+function blankSentence(word, sentence){
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const stem = escaped.length > 5 ? escaped.slice(0, Math.max(4, escaped.length - 3)) : escaped;
+  const re = new RegExp('\\b' + stem + '[a-z]*\\b', 'i');
+  if(re.test(sentence)) return sentence.replace(re, '________');
+  return null;
+}
+
+function pickDistractors(target, pool, key, n){
+  const chosen = [];
+  const used = new Set([key(target)]);
+  const candidates = shuffle(pool);
+  for(const c of candidates){
+    if(chosen.length >= n) break;
+    const k = key(c);
+    if(used.has(k)) continue;
+    used.add(k);
+    chosen.push(c);
+  }
+  return chosen;
+}
+
+function buildQuestions(type, count){
+  const pool = shuffle(vocabulary);
+  const questions = [];
+
+  // For context / fill, prefer words whose example actually contains the word.
+  let source = pool;
+  if(type === 'context' || type === 'fill'){
+    const valid = pool.filter(w => blankSentence(w.word, w.example));
+    source = valid.length >= count ? valid : pool;
+  }
+
+  for(const w of source){
+    if(questions.length >= count) break;
+    const id = wordId(w);
+
+    if(type === 'mc-vi'){
+      const distractors = pickDistractors(w, vocabulary, x => x.vietnamese, 3);
+      const options = shuffle([w, ...distractors]);
+      questions.push({
+        word: w,
+        prompt: 'What does <span class="hl">' + esc(w.word) + '</span> mean?',
+        hint: w.pos + '  ' + w.ipa,
+        options: options.map(o => o.vietnamese),
+        answerIndex: options.indexOf(w),
+        explain: w.definition + ' — ' + w.example
+      });
+    }
+    else if(type === 'def-word'){
+      const distractors = pickDistractors(w, vocabulary, x => x.word, 3);
+      const options = shuffle([w, ...distractors]);
+      questions.push({
+        word: w,
+        prompt: 'Which word means: <span class="hl">' + esc(w.definition) + '</span>?',
+        hint: 'Part of speech: ' + w.pos,
+        options: options.map(o => o.word),
+        answerIndex: options.indexOf(w),
+        explain: w.word + ' — ' + w.vietnamese
+      });
+    }
+    else if(type === 'vi-en'){
+      const distractors = pickDistractors(w, vocabulary, x => x.word, 3);
+      const options = shuffle([w, ...distractors]);
+      questions.push({
+        word: w,
+        prompt: 'Which English word means: <span class="hl">' + esc(w.vietnamese) + '</span>?',
+        hint: 'Part of speech: ' + w.pos,
+        options: options.map(o => o.word),
+        answerIndex: options.indexOf(w),
+        explain: w.word + ' ' + w.ipa + ' — ' + w.definition
+      });
+    }
+    else if(type === 'spelling'){
+      questions.push({
+        word: w,
+        kind: 'input',
+        prompt: 'Spell the word you hear and read about.',
+        hint: w.ipa + ' — ' + w.definition,
+        answer: w.word,
+        explain: w.word + ' — ' + w.vietnamese
+      });
+    }
+    else if(type === 'fill'){
+      const blanked = blankSentence(w.word, w.example);
+      if(!blanked) continue;
+      questions.push({
+        word: w,
+        kind: 'input',
+        prompt: 'Type the missing word: ' + esc(blanked),
+        hint: w.ipa + ' — ' + w.definition,
+        answer: w.word,
+        explain: w.word + ' — ' + w.vietnamese
+      });
+    }
+    else if(type === 'context'){
+      const blanked = blankSentence(w.word, w.example);
+      if(!blanked) continue;
+      const distractors = pickDistractors(w, vocabulary, x => x.word, 3);
+      const options = shuffle([w, ...distractors]);
+      questions.push({
+        word: w,
+        prompt: 'Choose the word that best completes the sentence:<br><span class="hl">' + esc(blanked) + '</span>',
+        hint: 'Translation: ' + w.translation,
+        options: options.map(o => o.word),
+        answerIndex: options.indexOf(w),
+        explain: w.word + ' — ' + w.vietnamese + '. ' + w.example
+      });
+    }
+  }
+  return questions;
+}
+
+function startQuiz(type, count){
+  quiz.type = type;
+  quiz.length = count;
+  quiz.questions = buildQuestions(type, count);
+  quiz.index = 0;
+  quiz.answered = false;
+  quiz.score = 0;
+  quiz.results = [];
+
+  if(!quiz.questions.length){ toast('Not enough data for this exercise.'); return; }
+
+  document.getElementById('practiceMenu').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizRun').style.display = 'block';
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = quiz.questions[quiz.index];
+  if(!q) return;
+  quiz.answered = false;
+
+  document.getElementById('quizProgressText').textContent = 'Question ' + (quiz.index + 1) + ' / ' + quiz.questions.length;
+  document.getElementById('quizBar').style.width = ((quiz.index) / quiz.questions.length * 100) + '%';
+  document.getElementById('quizQuestion').innerHTML = q.prompt;
+  document.getElementById('quizFeedback').innerHTML = '';
+  document.getElementById('quizNextBtn').style.display = 'none';
+  document.getElementById('quizNextBtn').textContent = (quiz.index === quiz.questions.length - 1) ? 'See results →' : 'Next →';
+
+  const body = document.getElementById('quizBody');
+
+  if(q.kind === 'input'){
+    body.innerHTML =
+      '<div class="hint-line"><b>' + esc(q.hint) + '</b></div>' +
+      '<div class="input-row">' +
+        '<input type="text" class="text-input" id="quizInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type your answer…" aria-label="Your answer" />' +
+        '<button class="btn btn-primary" id="quizCheck">Check</button>' +
+        '<button class="btn" id="quizHear" aria-label="Listen to the word">🔊</button>' +
+      '</div>';
+    const input = document.getElementById('quizInput');
+    input.focus();
+    input.addEventListener('keydown', e => { if(e.key === 'Enter') checkInputAnswer(); });
+    document.getElementById('quizCheck').addEventListener('click', checkInputAnswer);
+    document.getElementById('quizHear').addEventListener('click', () => speak(q.word.word));
+  } else {
+    const letters = ['A','B','C','D'];
+    body.innerHTML = '<div class="options" id="quizOptions">' +
+      q.options.map((opt, i) =>
+        '<button class="option" data-index="' + i + '"><span class="opt-key">' + letters[i] + '</span><span>' + esc(opt) + '</span></button>'
+      ).join('') + '</div>';
+    document.querySelectorAll('#quizOptions .option').forEach(btn => {
+      btn.addEventListener('click', () => checkChoiceAnswer(parseInt(btn.dataset.index, 10)));
+    });
+  }
+}
+
+function checkChoiceAnswer(chosen){
+  if(quiz.answered) return;
+  quiz.answered = true;
+  const q = quiz.questions[quiz.index];
+  const correct = chosen === q.answerIndex;
+
+  document.querySelectorAll('#quizOptions .option').forEach(btn => {
+    btn.disabled = true;
+    const i = parseInt(btn.dataset.index, 10);
+    if(i === q.answerIndex) btn.classList.add('correct');
+    else if(i === chosen) btn.classList.add('wrong');
+  });
+
+  finishQuestion(correct, q.options[q.answerIndex], q);
+}
+
+function checkInputAnswer(){
+  if(quiz.answered) return;
+  const q = quiz.questions[quiz.index];
+  const input = document.getElementById('quizInput');
+  if(!input) return;
+  const val = input.value.trim();
+  if(!val){ toast('Please type an answer first.'); return; }
+
+  quiz.answered = true;
+  const normalise = s => s.toLowerCase().replace(/[^a-z ]/g, '').trim();
+  const correct = normalise(val) === normalise(q.answer);
+
+  input.disabled = true;
+  const checkBtn = document.getElementById('quizCheck');
+  if(checkBtn) checkBtn.disabled = true;
+  input.style.borderColor = correct ? 'var(--ok)' : 'var(--bad)';
+
+  finishQuestion(correct, q.answer, q);
+}
+
+function finishQuestion(correct, correctAnswer, q){
+  const fb = document.getElementById('quizFeedback');
+  if(correct){
+    quiz.score++;
+    fb.innerHTML = '<div class="feedback ok"><strong>✅ Correct!</strong>' + esc(q.explain) + '</div>';
+  } else {
+    fb.innerHTML = '<div class="feedback bad"><strong>❌ Not quite.</strong>Correct answer: <b>' + esc(correctAnswer) + '</b><br>' + esc(q.explain) + '</div>';
+  }
+
+  quiz.results.push({
+    word: q.word,
+    correct: correct,
+    yourAnswer: correct ? correctAnswer : null,
+    correctAnswer: correctAnswer
+  });
+
+  const category = (quiz.type === 'spelling' || quiz.type === 'fill') ? 'spelling'
+                 : (quiz.type === 'context') ? 'context' : 'quiz';
+  recordAnswer(wordId(q.word), correct, category);
+
+  const nextBtn = document.getElementById('quizNextBtn');
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.focus();
+  nextBtn.onclick = () => {
+    if(quiz.index < quiz.questions.length - 1){
+      quiz.index++;
+      renderQuestion();
+    } else {
+      showQuizResult();
+    }
+  };
+}
+
+function showQuizResult(){
+  document.getElementById('quizRun').style.display = 'none';
+  const box = document.getElementById('quizResult');
+  box.style.display = 'block';
+
+  const total = quiz.questions.length;
+  const score = quiz.score;
+  const acc = Math.round(score / total * 100);
+  const wrong = total - score;
+
+  const typeNames = {
+    'mc-vi':'Multiple Choice', 'def-word':'Definition → Word', 'vi-en':'Vietnamese → English',
+    'spelling':'Spelling Practice', 'fill':'Fill in the Blank', 'context':'Context Practice'
+  };
+
+  addSessionHistory(typeNames[quiz.type] || 'Practice', score, total);
+
+  let html = '' +
+    '<div class="result-hero">' +
+      '<div style="font-size:1rem;font-weight:700;color:var(--text-soft);">Quiz Complete</div>' +
+      '<div class="big-score">' + score + ' / ' + total + '</div>' +
+      '<div class="big-label">Accuracy: ' + acc + '%</div>' +
+      '<div style="margin-top:14px;display:flex;gap:18px;justify-content:center;flex-wrap:wrap;">' +
+        '<span class="badge mastered">Correct: ' + score + '</span>' +
+        '<span class="badge learning">Incorrect: ' + wrong + '</span>' +
+      '</div>' +
+    '</div>';
+
+  html += '<div class="card"><div class="section-title" style="font-size:1rem;">📋 Review</div>';
+  quiz.results.forEach(r => {
+    const cls = r.correct ? 'ok' : 'bad';
+    html += '<div class="review-item ' + cls + '">' +
+      '<div class="ri-word">' + (r.correct ? '✅ ' : '❌ ') + esc(r.word.word) + ' <span style="font-weight:500;color:var(--muted);font-size:.82rem;">' + esc(r.word.ipa) + '</span></div>' +
+      '<div class="ri-line"><b>Meaning:</b> ' + esc(r.word.vietnamese) + '</div>' +
+      (r.correct ? '' : '<div class="ri-line"><b>Correct answer:</b> ' + esc(r.correctAnswer) + '</div>') +
+      '<div class="ri-ex">' + esc(r.word.example) + ' — ' + esc(r.word.translation) + '</div>' +
+    '</div>';
+  });
+  html += '</div>';
+
+  html += '<div class="btn-row" style="justify-content:center;">' +
+    '<button class="btn btn-primary" id="resRetry">🔄 Retry</button>' +
+    '<button class="btn btn-warn" id="resMistakes">🎯 Practice Mistakes</button>' +
+    '<button class="btn" id="resBack">🏠 Back to Dashboard</button>' +
+  '</div>';
+
+  box.innerHTML = html;
+
+  document.getElementById('resRetry').onclick = () => startQuiz(quiz.type, quiz.length);
+  document.getElementById('resBack').onclick = () => { go('dashboard'); };
+  document.getElementById('resMistakes').onclick = () => {
+    const mistakes = quiz.results.filter(r => !r.correct).map(r => r.word);
+    if(!mistakes.length){ toast('No mistakes to practise — well done!'); return; }
+    startMistakeDeck(mistakes);
+  };
+}
+
+/** Run a custom practice round containing only the given words. */
+function startMistakeDeck(words){
+  quiz.type = 'context';
+  quiz.questions = [];
+  words.forEach(w => {
+    const blanked = blankSentence(w.word, w.example);
+    const distractors = pickDistractors(w, vocabulary, x => x.word, 3);
+    const options = shuffle([w, ...distractors]);
+    quiz.questions.push({
+      word: w,
+      prompt: blanked
+        ? 'Choose the word that best completes the sentence:<br><span class="hl">' + esc(blanked) + '</span>'
+        : 'Which word means: <span class="hl">' + esc(w.definition) + '</span>?',
+      hint: 'Translation: ' + w.translation,
+      options: options.map(o => o.word),
+      answerIndex: options.indexOf(w),
+      explain: w.word + ' — ' + w.vietnamese + '. ' + w.example
+    });
+  });
+  quiz.index = 0; quiz.answered = false; quiz.score = 0; quiz.results = [];
+  document.getElementById('practiceMenu').style.display = 'none';
+  document.getElementById('quizResult').style.display = 'none';
+  document.getElementById('quizRun').style.display = 'block';
+  renderQuestion();
+}
+
+/* ============================================================
+   LISTENING ENGINE
+   ============================================================ */
+const listening = {
+  questions: [],
+  index: 0,
+  answered: false,
+  score: 0,
+  total: 0
+};
+
+function startListeningRound(count){
+  const n = count || 10;
+  const words = buildDeck(Math.min(n, vocabulary.length));
+  listening.questions = words.map(w => {
+    const distractors = pickDistractors(w, vocabulary, x => x.word, 3);
+    const options = shuffle([w, ...distractors]);
+    return { word: w, options: options, answerIndex: options.indexOf(w) };
+  });
+  listening.index = 0;
+  listening.answered = false;
+  listening.score = 0;
+  listening.total = listening.questions.length;
+  renderListening();
+}
+
+function renderListening(){
+  const q = listening.questions[listening.index];
+  if(!q) return;
+  listening.answered = false;
+
+  document.getElementById('lsProgressText').textContent = 'Question ' + (listening.index + 1) + ' / ' + listening.questions.length;
+  document.getElementById('lsBar').style.width = (listening.index / listening.questions.length * 100) + '%';
+  document.getElementById('lsFeedback').innerHTML = '';
+  document.getElementById('lsNext').style.display = 'none';
+
+  const stat = state.stats.listeningTotal > 0
+    ? Math.round(state.stats.listeningCorrect / state.stats.listeningTotal * 100)
+    : 0;
+  document.getElementById('lsAccuracy').textContent = 'Listening accuracy: ' + stat + '%';
+
+  const letters = ['A','B','C','D'];
+  document.getElementById('lsOptions').innerHTML = q.options.map((o, i) =>
+    '<button class="option" data-index="' + i + '"><span class="opt-key">' + letters[i] + '</span><span>' + esc(o.word) + '</span></button>'
+  ).join('');
+
+  document.querySelectorAll('#lsOptions .option').forEach(btn => {
+    btn.addEventListener('click', () => checkListening(parseInt(btn.dataset.index, 10)));
+  });
+
+  // Auto-play the word after a short delay
+  setTimeout(() => speak(q.word.word), 320);
+}
+
+function checkListening(chosen){
+  if(listening.answered) return;
+  listening.answered = true;
+  const q = listening.questions[listening.index];
+  const correct = chosen === q.answerIndex;
+
+  document.querySelectorAll('#lsOptions .option').forEach(btn => {
+    btn.disabled = true;
+    const i = parseInt(btn.dataset.index, 10);
+    if(i === q.answerIndex) btn.classList.add('correct');
+    else if(i === chosen) btn.classList.add('wrong');
+  });
+
+  if(correct) listening.score++;
+
+  const fb = document.getElementById('lsFeedback');
+  if(correct){
+    fb.innerHTML = '<div class="feedback ok"><strong>✅ Correct!</strong>' + esc(q.word.word) + ' ' + esc(q.word.ipa) + ' — ' + esc(q.word.vietnamese) + '</div>';
+  } else {
+    fb.innerHTML = '<div class="feedback bad"><strong>❌ That was:</strong> ' + esc(q.word.word) + ' ' + esc(q.word.ipa) + ' — ' + esc(q.word.vietnamese) + '<br>' + esc(q.word.example) + '</div>';
+  }
+
+  recordAnswer(wordId(q.word), correct, 'listening');
+
+  const nextBtn = document.getElementById('lsNext');
+  nextBtn.style.display = 'inline-flex';
+  nextBtn.onclick = () => {
+    if(listening.index < listening.questions.length - 1){
+      listening.index++;
+      renderListening();
+    } else {
+      addSessionHistory('Listening Practice', listening.score, listening.questions.length);
+      document.getElementById('lsBar').style.width = '100%';
+      fb.innerHTML = '<div class="feedback ok"><strong>🎉 Round complete!</strong>You scored ' + listening.score + ' / ' + listening.questions.length + '.</div>';
+      nextBtn.style.display = 'none';
+      toast('Listening round complete: ' + listening.score + '/' + listening.questions.length);
+    }
+  };
+}
+
+function renderSpeakingBox(){
+  const box = document.getElementById('speakBox');
+  const pool = buildDeck(1);
+  const w = pool[0] || vocabulary[0];
+  const supported = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  box.innerHTML =
+    '<div style="text-align:center;padding:8px 0;">' +
+      '<div style="font-size:1.6rem;font-weight:800;color:var(--text);">' + esc(w.word) + '</div>' +
+      '<div style="color:var(--muted);margin-top:4px;">' + esc(w.ipa) + '</div>' +
+      '<div style="font-size:.86rem;color:var(--text-soft);margin-top:10px;">' + esc(w.definition) + '</div>' +
+      '<div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
+        '<button class="btn" id="spkListen">🔊 Listen</button>' +
+        '<button class="btn btn-primary" id="spkPractice">🎤 Practice</button>' +
+        '<button class="btn" id="spkNext">➡️ Another word</button>' +
+      '</div>' +
+      '<div id="spkResult" style="margin-top:14px;font-size:.86rem;color:var(--muted);"></div>' +
+    '</div>';
+
+  document.getElementById('spkListen').onclick = () => speak(w.word, 0.85);
+  document.getElementById('spkNext').onclick = renderSpeakingBox;
+
+  document.getElementById('spkPractice').onclick = () => {
+    const resultEl = document.getElementById('spkResult');
+    if(!supported){
+      resultEl.innerHTML = '<div class="feedback bad">Speech recognition is not supported in this browser. Please use the “Listen” button to compare your pronunciation by ear.</div>';
+      return;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const rec = new SR();
+    rec.lang = 'en-GB';
+    rec.interimResults = false;
+    rec.maxAlternatives = 3;
+    resultEl.innerHTML = '<div class="feedback ok">🎤 Listening… please say the word.</div>';
+    rec.onresult = (ev) => {
+      const said = ev.results[0][0].transcript.toLowerCase().trim();
+      const target = w.word.toLowerCase();
+      const ok = said.includes(target) || target.includes(said);
+      resultEl.innerHTML = ok
+        ? '<div class="feedback ok"><strong>✅ Nice!</strong>We heard: “' + esc(said) + '”</div>'
+        : '<div class="feedback bad"><strong>Try again.</strong>We heard: “' + esc(said) + '” — target: “' + esc(w.word) + '”</div>';
+    };
+    rec.onerror = () => {
+      resultEl.innerHTML = '<div class="feedback bad">Could not access the microphone. Please check your browser permissions.</div>';
+    };
+    rec.onend = () => {};
+    try{ rec.start(); }catch(e){
+      resultEl.innerHTML = '<div class="feedback bad">Speech recognition could not start in this browser.</div>';
+    }
+  };
+}
+
+/* ============================================================
+   RENDERING — DASHBOARD
+   ============================================================ */
+function renderDashboard(){
+  const c = counts();
+  const totalAnswers = state.stats.correct + state.stats.incorrect;
+  const accuracy = totalAnswers ? Math.round(state.stats.correct / totalAnswers * 100) : 0;
+  const streak = calcStreak();
+
+  document.getElementById('dashStats').innerHTML = '' +
+    statCard('📚', c.total, 'Total words') +
+    statCard('📖', c.learned, 'Learned') +
+    statCard('🏆', c.mastered, 'Mastered') +
+    statCard('⏳', c.remaining, 'Remaining') +
+    statCard('🎯', accuracy + '%', 'Accuracy') +
+    statCard('🔥', streak + ' day' + (streak === 1 ? '' : 's'), 'Streak') +
+    statCard('⏱️', formatTime(state.stats.timeSec), 'Study time') +
+    statCard('🔁', state.stats.totalReviews, 'Total reviews');
+
+  const masteryPct = Math.round(c.mastered / c.total * 100);
+  const learnedPct = Math.round(c.learned / c.total * 100);
+  const listenAcc = state.stats.listeningTotal ? Math.round(state.stats.listeningCorrect / state.stats.listeningTotal * 100) : 0;
+  const spellAcc = state.stats.spellingTotal ? Math.round(state.stats.spellingCorrect / state.stats.spellingTotal * 100) : 0;
+
+  document.getElementById('dashBars').innerHTML =
+    bar('Vocabulary Mastery', masteryPct, '') +
+    bar('Words Started', learnedPct, 'green') +
+    bar('Overall Accuracy', accuracy, 'purple') +
+    bar('Listening Accuracy', listenAcc, 'orange') +
+    bar('Spelling Accuracy', spellAcc, 'green');
+
+  // Daily goal
+  const goal = state.settings.dailyGoal;
+  const done = state.stats.daily[todayStr()] || 0;
+  document.getElementById('goalNum').textContent = Math.min(done, 999) + ' / ' + goal;
+  const goalPct = Math.min(100, Math.round(done / goal * 100));
+  document.getElementById('goalBar').style.width = goalPct + '%';
+  document.querySelectorAll('#goalPills .pill').forEach(p => {
+    p.classList.toggle('active', parseInt(p.dataset.goal, 10) === goal);
+  });
+  document.getElementById('goalMsg').innerHTML = done >= goal
+    ? '<div class="feedback ok" style="margin-top:0;"><strong>🎉 Daily goal completed!</strong>Great work — come back tomorrow to keep your streak.</div>'
+    : '';
+
+  // Continue learning
+  const nextWord = buildDeck(1)[0];
+  if(nextWord){
+    const p = getProgress(wordId(nextWord));
+    document.getElementById('continueBox').innerHTML =
+      '<div style="font-size:1.5rem;font-weight:800;color:var(--primary-dark);letter-spacing:-.02em;">' + esc(nextWord.word) + '</div>' +
+      '<div style="color:var(--muted);font-size:.88rem;">' + esc(nextWord.ipa) + ' · ' + esc(nextWord.pos) + '</div>' +
+      '<div style="margin-top:10px;font-size:.86rem;color:var(--text-soft);">' + esc(nextWord.definition) + '</div>' +
+      '<div class="bar-wrap" style="margin-top:14px;">' +
+        '<div class="bar-head"><span>Deck progress</span><span>' + Math.round(counts().learned / counts().total * 100) + '%</span></div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + Math.round(counts().learned / counts().total * 100) + '%"></div></div>' +
+      '</div>' +
+      '<div class="btn-row" style="margin-top:8px;">' +
+        '<button class="btn btn-primary" id="continueBtn">▶️ Continue Learning</button>' +
+        '<button class="btn" id="continueListen" aria-label="Listen to the word">🔊</button>' +
+      '</div>' +
+      '<div style="font-size:.76rem;color:var(--muted);margin-top:10px;">Status: <span class="badge ' + p.status + '">' + p.status + '</span></div>';
+    document.getElementById('continueBtn').onclick = () => {
+      go('flashcards');
+      flashcard.deck = [nextWord].concat(buildDeck(9).filter(x => wordId(x) !== wordId(nextWord)));
+      flashcard.index = 0; flashcard.flipped = false; renderFlashcard();
+    };
+    document.getElementById('continueListen').onclick = () => speak(nextWord.word);
+  }
+}
+
+function statCard(icon, value, label){
+  return '<div class="stat"><div class="stat-icon">' + icon + '</div>' +
+    '<div class="stat-value">' + esc(String(value)) + '</div>' +
+    '<div class="stat-label">' + esc(label) + '</div></div>';
+}
+function bar(label, pct, cls){
+  return '<div class="bar-wrap">' +
+    '<div class="bar-head"><span>' + esc(label) + '</span><span>' + pct + '%</span></div>' +
+    '<div class="bar-track"><div class="bar-fill ' + (cls || '') + '" style="width:' + pct + '%"></div></div>' +
+  '</div>';
+}
+
+/* ============================================================
+   RENDERING — PROGRESS PAGE
+   ============================================================ */
+function renderProgress(){
+  const c = counts();
+  const totalAnswers = state.stats.correct + state.stats.incorrect;
+  const accuracy = totalAnswers ? Math.round(state.stats.correct / totalAnswers * 100) : 0;
+  const streak = calcStreak();
+
+  document.getElementById('progressStats').innerHTML = '' +
+    statCard('📚', c.total, 'Total words') +
+    statCard('📖', c.learned, 'Words studied') +
+    statCard('🏆', c.mastered, 'Mastered') +
+    statCard('⭐', c.difficult, 'Difficult') +
+    statCard('💙', c.favourite, 'Favourites') +
+    statCard('🔁', state.stats.totalReviews, 'Total reviews') +
+    statCard('✅', state.stats.correct, 'Correct answers') +
+    statCard('❌', state.stats.incorrect, 'Incorrect answers') +
+    statCard('🎯', accuracy + '%', 'Overall accuracy') +
+    statCard('🔥', streak, 'Day streak') +
+    statCard('🕘', state.stats.sessions, 'Study sessions') +
+    statCard('⏱️', formatTime(state.stats.timeSec), 'Study time');
+
+  const masteryPct = Math.round(c.mastered / c.total * 100);
+  const learnedPct = Math.round(c.learned / c.total * 100);
+  const listenAcc = state.stats.listeningTotal ? Math.round(state.stats.listeningCorrect / state.stats.listeningTotal * 100) : 0;
+  const spellAcc = state.stats.spellingTotal ? Math.round(state.stats.spellingCorrect / state.stats.spellingTotal * 100) : 0;
+  const contextAcc = state.stats.contextTotal ? Math.round(state.stats.contextCorrect / state.stats.contextTotal * 100) : 0;
+  const quizAcc = state.stats.quizTotal ? Math.round(state.stats.quizCorrect / state.stats.quizTotal * 100) : 0;
+
+  document.getElementById('skillBars').innerHTML =
+    bar('Vocabulary Mastery', masteryPct, '') +
+    bar('Words Started', learnedPct, 'green') +
+    bar('Quiz Accuracy', quizAcc, 'purple') +
+    bar('Listening', listenAcc, 'orange') +
+    bar('Spelling', spellAcc, 'green') +
+    bar('Context', contextAcc, 'purple');
+
+  const hist = state.stats.history.slice(0, 12);
+  document.getElementById('sessionHistory').innerHTML = hist.length
+    ? hist.map(h =>
+        '<div class="review-item ' + (h.total && h.score / h.total >= 0.7 ? 'ok' : 'bad') + '">' +
+          '<div class="ri-word">' + esc(h.type) + '</div>' +
+          '<div class="ri-line">' + h.score + ' / ' + h.total + ' · ' + (h.total ? Math.round(h.score / h.total * 100) : 0) + '% · ' + esc(h.date) + '</div>' +
+        '</div>'
+      ).join('')
+    : '<div class="empty-state">No sessions yet. Start practising to see your history here.</div>';
+
+  document.getElementById('settingsGoal').value = String(state.settings.dailyGoal);
+  updateVoiceInfo();
+}
+
+/* ============================================================
+   RENDERING — LIBRARY
+   ============================================================ */
+const libFilter = { status: 'all', pos: 'all', query: '' };
+
+function matchesFilter(w){
+  const id = wordId(w);
+  const p = getProgress(id);
+
+  if(libFilter.status === 'difficult' && !p.difficult) return false;
+  if(libFilter.status === 'favourite' && !p.favourite) return false;
+  if(['new','learning','familiar','mastered'].includes(libFilter.status) && p.status !== libFilter.status) return false;
+
+  if(libFilter.pos !== 'all'){
+    const cats = posCategories(w.pos);
+    if(!cats.includes(libFilter.pos)) return false;
+  }
+
+  if(libFilter.query){
+    const q = libFilter.query.toLowerCase();
+    const hay = (w.word + ' ' + w.vietnamese + ' ' + w.definition + ' ' + w.pos + ' ' + posCategories(w.pos).join(' ')).toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function renderLibrary(){
+  const list = vocabulary.filter(matchesFilter);
+  document.getElementById('libCount').textContent = list.length + ' of ' + vocabulary.length + ' words shown';
+
+  const el = document.getElementById('vocabList');
+  if(!list.length){
+    el.innerHTML = '<div class="empty-state">No words match your search. Try a different keyword or filter.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(w => {
+    const id = wordId(w);
+    const p = getProgress(id);
+    return '<div class="vocab-item" data-id="' + esc(id) + '" tabindex="0" role="button" aria-label="Open ' + esc(w.word) + '">' +
+      '<div class="vi-main">' +
+        '<div><span class="vi-word">' + esc(w.word) + '</span><span class="vi-ipa">' + esc(w.ipa) + '</span></div>' +
+        '<div class="vi-def">' + esc(w.definition) + '</div>' +
+        '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+          '<span class="badge ' + p.status + '">' + p.status + '</span>' +
+          (p.difficult ? '<span class="badge learning">difficult</span>' : '') +
+          (p.favourite ? '<span class="badge familiar">★</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<span class="vi-pos">' + esc(posCategories(w.pos)[0] || w.pos) + '</span>' +
+      '<button class="speak-btn" data-speak="' + esc(w.word) + '" aria-label="Listen to ' + esc(w.word) + '">🔊</button>' +
+    '</div>';
+  }).join('');
+
+  el.querySelectorAll('.vocab-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if(e.target.closest('.speak-btn')) return;
+      openWordDetail(item.dataset.id);
+    });
+    item.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openWordDetail(item.dataset.id); }
+    });
+  });
+  el.querySelectorAll('[data-speak]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); speak(btn.dataset.speak); });
+  });
+}
+
+/** Open a single word in the flashcard view. */
+function openWordDetail(id){
+  const w = getWordById(id);
+  if(!w) return;
+  go('flashcards');
+  flashcard.deck = [w];
+  flashcard.index = 0;
+  flashcard.flipped = true;
+  renderFlashcard();
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function go(page){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('page-' + page);
+  if(target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'progress') renderProgress();
+  if(page === 'library') renderLibrary();
+  if(page === 'listening') { if(!listening.questions.length) startListeningRound(10); else renderListening(); renderSpeakingBox(); }
+  if(page === 'flashcards' && !flashcard.deck.length) startDeck(flashcard.size);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   REFRESH EVERYTHING
+   ============================================================ */
+function refreshAll(){
+  const active = document.querySelector('.page.active');
+  if(!active) return;
+  if(active.id === 'page-dashboard') renderDashboard();
+  if(active.id === 'page-progress') renderProgress();
+  if(active.id === 'page-library') renderLibrary();
+}
+
+/* ============================================================
+   EVENT HANDLERS
+   ============================================================ */
+function bindEvents(){
+  // Nav
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => go(btn.dataset.page));
+  });
+
+  // Quick practice on dashboard
+  document.querySelectorAll('[data-quick]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.quick;
+      if(q === 'flashcards'){ go('flashcards'); startDeck(flashcard.size); }
+      else if(q === 'quiz'){ go('practice'); startQuiz('mc-vi', quiz.length); }
+      else if(q === 'listening'){ go('listening'); startListeningRound(10); }
+      else if(q === 'spelling'){ go('practice'); startQuiz('spelling', quiz.length); }
+      else if(q === 'context'){ go('practice'); startQuiz('context', quiz.length); }
+    });
+  });
+
+  // Daily goal pills
+  document.querySelectorAll('#goalPills .pill').forEach(p => {
+    p.addEventListener('click', () => {
+      state.settings.dailyGoal = parseInt(p.dataset.goal, 10);
+      saveState(true);
+      renderDashboard();
+      toast('Daily goal set to ' + state.settings.dailyGoal + ' words');
+    });
+  });
+
+  // Flashcard controls
+  document.getElementById('fcCard').addEventListener('click', (e) => {
+    if(e.target.closest('.speak-btn')) return;
+    flipCard();
+  });
+  document.getElementById('fcCard').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); flipCard(); }
+  });
+  document.getElementById('fcFlip').addEventListener('click', flipCard);
+  document.getElementById('fcNext').addEventListener('click', nextCard);
+  document.getElementById('fcPrev').addEventListener('click', prevCard);
+  document.getElementById('fcListen').addEventListener('click', () => { const w = currentCard(); if(w) speak(w.word); });
+  document.getElementById('fcSpeakBtn').addEventListener('click', (e) => { e.stopPropagation(); const w = currentCard(); if(w) speak(w.word); });
+  document.getElementById('fcSpeakBtn2').addEventListener('click', (e) => { e.stopPropagation(); const w = currentCard(); if(w) speak(w.word); });
+
+  document.getElementById('fcKnow').addEventListener('click', () => {
+    const w = currentCard(); if(!w) return;
+    const p = ensureWord(wordId(w));
+    p.correct += 2; p.reviews += 1; p.lastReviewed = todayStr();
+    p.difficult = false;
+    if(p.reviews >= 4 && p.correct / Math.max(1,p.reviews) >= 0.8){ p.status = 'mastered'; p.mastered = true; }
+    else if(p.reviews >= 2){ p.status = 'familiar'; }
+    else { p.status = 'learning'; }
+    state.stats.totalReviews += 1;
+    state.stats.correct += 1;
+    const d = todayStr();
+    state.stats.daily[d] = (state.stats.daily[d] || 0) + 1;
+    saveState();
+    toast('Marked as known 👍');
+    renderFlashcard();
+    refreshAll();
+    setTimeout(nextCard, 320);
+  });
+
+  document.getElementById('fcDontKnow').addEventListener('click', () => {
+    const w = currentCard(); if(!w) return;
+    const p = ensureWord(wordId(w));
+    p.incorrect += 1; p.reviews += 1; p.lastReviewed = todayStr();
+    if(p.status === 'new') p.status = 'learning';
+    if(p.status === 'mastered'){ p.status = 'familiar'; p.mastered = false; }
+    state.stats.totalReviews += 1;
+    state.stats.incorrect += 1;
+    const d = todayStr();
+    state.stats.daily[d] = (state.stats.daily[d] || 0) + 1;
+    saveState();
+    toast('We will show this word again soon.');
+    renderFlashcard();
+    refreshAll();
+  });
+
+  document.getElementById('fcDifficult').addEventListener('click', () => {
+    const w = currentCard(); if(!w) return;
+    const p = ensureWord(wordId(w));
+    p.difficult = !p.difficult;
+    saveState();
+    toast(p.difficult ? 'Marked as difficult ⭐' : 'Removed from difficult list');
+    renderFlashcard();
+  });
+
+  document.getElementById('fcFav').addEventListener('click', () => {
+    const w = currentCard(); if(!w) return;
+    const p = ensureWord(wordId(w));
+    p.favourite = !p.favourite;
+    saveState();
+    toast(p.favourite ? 'Added to favourites 💙' : 'Removed from favourites');
+    renderFlashcard();
+  });
+
+  // Deck size pills
+  document.querySelectorAll('#deckPills .pill[data-deck]').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#deckPills .pill[data-deck]').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      const v = p.dataset.deck;
+      startDeck(v === 'all' ? 'all' : parseInt(v, 10));
+    });
+  });
+  document.getElementById('newDeckBtn').addEventListener('click', () => {
+    startDeck(flashcard.size);
+    toast('New session started');
+  });
+
+  // Practice menu
+  document.querySelectorAll('[data-practice]').forEach(btn => {
+    btn.addEventListener('click', () => startQuiz(btn.dataset.practice, quiz.length));
+  });
+  document.querySelectorAll('#quizLengthPills .pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('#quizLengthPills .pill').forEach(x => x.classList.remove('active'));
+      p.classList.add('active');
+      quiz.length = parseInt(p.dataset.len, 10);
+    });
+  });
+  document.getElementById('quizQuit').addEventListener('click', () => {
+    document.getElementById('quizRun').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'none';
+    document.getElementById('practiceMenu').style.display = 'block';
+    refreshAll();
+  });
+
+  // Listening
+  document.getElementById('lsPlay').addEventListener('click', () => {
+    const q = listening.questions[listening.index];
+    if(q) speak(q.word.word);
+  });
+  document.getElementById('lsReplay').addEventListener('click', () => {
+    const q = listening.questions[listening.index];
+    if(q) speak(q.word.word, 0.8);
+  });
+  document.getElementById('lsRestart').addEventListener('click', () => {
+    startListeningRound(10);
+    toast('New listening round started');
+  });
+
+  // Library
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    libFilter.query = e.target.value.trim();
+    renderLibrary();
+  });
+  document.getElementById('posSelect').addEventListener('change', (e) => {
+    libFilter.pos = e.target.value;
+    renderLibrary();
+  });
+  document.querySelectorAll('#statusChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#statusChips .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      libFilter.status = chip.dataset.status;
+      renderLibrary();
+    });
+  });
+
+  // Settings
+  document.getElementById('settingsGoal').addEventListener('change', (e) => {
+    state.settings.dailyGoal = parseInt(e.target.value, 10);
+    saveState(true);
+    toast('Daily goal updated');
+  });
+  document.getElementById('testVoiceBtn').addEventListener('click', () => speak('Vocabulary Master. British English pronunciation.'));
+
+  // Reset modal
+  const overlay = document.getElementById('modalOverlay');
+  document.getElementById('resetBtn').addEventListener('click', () => overlay.classList.add('show'));
+  document.getElementById('modalCancel').addEventListener('click', () => overlay.classList.remove('show'));
+  document.getElementById('modalConfirm').addEventListener('click', () => {
+    state = defaultState();
+    saveState(true);
+    overlay.classList.remove('show');
+    flashcard.deck = []; flashcard.index = 0;
+    listening.questions = []; listening.index = 0;
+    document.getElementById('quizRun').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'none';
+    document.getElementById('practiceMenu').style.display = 'block';
+    toast('All learning progress has been reset.');
+    renderDashboard();
+    renderProgress();
+    renderLibrary();
+    startDeck(flashcard.size);
+  });
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.classList.remove('show'); });
+
+  // Keyboard shortcuts for flashcards
+  document.addEventListener('keydown', (e) => {
+    if(!document.getElementById('page-flashcards').classList.contains('active')) return;
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if(e.key === 'ArrowRight') nextCard();
+    if(e.key === 'ArrowLeft') prevCard();
+    if(e.key === ' '){ e.preventDefault(); flipCard(); }
+  });
+}
+
+/* ============================================================
+   STUDY TIME TRACKER
+   ============================================================ */
+function startTimeTracker(){
+  setInterval(() => {
+    if(document.hidden) return;
+    state.stats.timeSec++;
+    if(state.stats.timeSec % 20 === 0) saveState();
+    const active = document.querySelector('.page.active');
+    if(active && active.id === 'page-dashboard') {
+      const el = document.querySelectorAll('#dashStats .stat-value');
+      if(el[6]) el[6].textContent = formatTime(state.stats.timeSec);
+    }
+  }, 1000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init(){
+  loadState();
+  bindEvents();
+  startDeck(flashcard.size);
+  renderDashboard();
+  renderProgress();
+  renderLibrary();
+  renderSpeakingBox();
+  startListeningRound(10);
+  startTimeTracker();
+  updateVoiceInfo();
+
+  // Make sure everything is persisted before leaving
+  window.addEventListener('beforeunload', () => saveState(true));
+  document.addEventListener('visibilitychange', () => { if(document.hidden) saveState(true); });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
